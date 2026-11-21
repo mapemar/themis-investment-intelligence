@@ -1,29 +1,67 @@
-# THEMIS — Investment Origination & Intelligence
+# THEMIS — Investment Intelligence & Business Development Platform
 
-**Live demo:** https://mapemar.github.io/themis-investment-intelligence/
+**Purpose:** demonstrate an evidence-led workflow for connecting Italian investors with infrastructure opportunities in emerging markets, assessing potential investment structures and preparing IFC-oriented business-development actions.
 
-An independent concept prototype demonstrating how open-source AI components could support investor intelligence, opportunity origination, investment matching and project assessment.
+**Demo URL (main branch only):** https://mapemar.github.io/themis-investment-intelligence/
 
-## Demo contents
-- Browser-based interactive website (`index.html`)
-- Investor intelligence workflow
-- Opportunity screening workflow
-- Investor–project matching workflow
-- Retrospective EcoNoroeste project assessment
-- Conceptual open-source AI architecture
+## THEMIS 2.0 recruiter demo
 
-## Architecture concept
-Qwen3 + Ollama (local LLM), Docling (document extraction), Qdrant (optional evidence retrieval), LangGraph (optional workflow orchestration) and Python (deterministic calculations).
+This branch expands the initial static prototype into a practical, interactive demonstration:
 
-## AI implementation status
-The public GitHub Pages site is a lightweight front-end demonstration with prepared illustrative outputs. It does not host an LLM or call a paid API. Live local inference with Qwen3 requires Ollama running on a local machine; it is not connected to the public static website.
+- **Investor intelligence:** institutional research dimensions and investor archetypes.
+- **Opportunity origination:** a source-backed snapshot of six Brazilian road and port concession / terminal pipeline records.
+- **Investor engagement CRM:** account archetypes, engagement stages, action log and next-step discipline.
+- **Investment matching:** evidence-aware qualitative match logic; no arbitrary composite score and no inference of investor appetite.
+- **Project finance lab:** user-editable synthetic assumptions, deterministic debt service, DSCR and simplified LLCR calculations.
+- **Evidence room:** official source register, claim taxonomy and concession diligence checklist.
+- **Country intelligence:** entry points to the Development Finance Observatory, World Bank Indicators API and OpenBB.
+- **EcoNoroeste:** retained as a retrospective reference case, never presented as a live opportunity.
+- **AI architecture:** documented open-source components and staged production architecture.
 
-## Important limitations
-- EcoNoroeste is a retrospective reference case, not an active investment lead.
-- CDP / Italian investor profiles are illustrative research lenses, not statements of current investment intentions.
-- No verified financial model is embedded; no IRR, DSCR, LLCR, traffic or CAPEX figures are fabricated.
-- Outputs are not investment advice, IFC recommendations or official World Bank Group products.
-- A production assessment must use dated primary sources and preserve evidence provenance.
+## What is real and what is not
 
-## Deployment
-GitHub Actions deploys the repository root to GitHub Pages on pushes to `main`. If needed, select **Settings → Pages → Build and deployment → GitHub Actions**.
+- The six Brazil pipeline records are drawn from official Ministry of Transport, ANTT and ANTAQ disclosures, with source URLs and a 21 November 2026 snapshot date. They are public procurement / concession pipeline records, not validated IFC leads.
+- Disclosed investment values are reproduced with their source basis; they are not financing requirements or independent estimates.
+- Investor profiles and investor appetite are not yet populated with verified institution-level evidence.
+- The finance lab's prefilled values are synthetic user-editable assumptions, not EcoNoroeste or any other project's financial data.
+- The public Pages demo is static. It does not yet connect to a live LLM, persistent CRM, DFO/OpenBB APIs, document-ingestion service or production database.
+- Outputs are not investment advice, credit decisions, IFC recommendations or official World Bank Group products.
+
+## Open-source capability references
+
+See [docs/OPEN_SOURCE_COMPONENTS.md](docs/OPEN_SOURCE_COMPONENTS.md) for the repositories and implementation rationale: Atlas (context/checkpoints), Development Finance Observatory (development-finance data), OpenBB (data providers), Twenty (CRM workflows), financial-analysis-toolkit and toll-road BOT references (project finance), Qwen3/Ollama, LangGraph, Docling, Qdrant, Splink and RapidFuzz.
+
+THEMIS adapts capability patterns and implements its own small calculation and matching modules. It does not copy paid templates, project assumptions or proprietary data. Licences and data terms must be reviewed before incorporating third-party code or datasets.
+
+## Repository structure
+
+- `index.html` — static interactive demo.
+- `data/README.md` — evidence-first data principles.
+- `data/schema.sql` — relational data foundation.
+- `data/brazil_pipeline.json` — source-linked Brazilian pipeline snapshot.
+- `themis/finance.py` — deterministic project-finance screening calculations.
+- `themis/matching.py` — evidence-aware qualitative matching.
+- `tests/` — automated calculation and matching tests.
+- `docs/OPEN_SOURCE_COMPONENTS.md` — open-source component map and licence cautions.
+
+## Run the Python tests locally
+
+```bash
+python -m pip install -e ".[test]"
+python -m pytest
+```
+
+## Next production milestones
+
+1. Populate a source-backed CDP investor profile and transaction history.
+2. Expand Brazil pipeline to 10+ opportunities and ingest tender documents.
+3. Build persistent investor/project/source records in SQLite or PostgreSQL.
+4. Add Docling extraction with document versioning and source-level citations.
+5. Add Qdrant hybrid retrieval and human-reviewed entity resolution.
+6. Connect a local Qwen3 model through Ollama and orchestrate controlled workflows with LangGraph.
+7. Extend the financial engine to multi-period project cash flows, sculpted debt, covenant schedules and sensitivities using verified project inputs.
+8. Generate exportable investment origination notes with evidence, gaps, IFC role hypotheses and next actions.
+
+## Independence and disclaimer
+
+THEMIS is an independent concept project developed as a professional work sample. It is not affiliated with, endorsed by or an official product of IFC or the World Bank Group.
