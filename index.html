@@ -205,13 +205,17 @@ var annuity=function(principal,rate,n){return principal===0?0:(rate===0?principa
 var ifcPay=annuity(ifc,p.ifcRate,p.ifcTenor),otherPay=annuity(other,p.otherRate,p.otherTenor);
 var buildRows=[];
 for(var y=0;y<p.build;y++){var cap=p.capex/p.build;buildRows.push({year:'Build '+(y+1),capex:cap,ifc:ifc/p.build,other:other/p.build,equity:equity/p.build})}
-var op=[],nol=0,ifcBal=ifc,otherBal=other,npv=-p.capex,dscrs=[],totalEquityCF=[-equity],pvDebt=0;
+var op=[],nol=0,unleveredNOL=0,ifcBal=ifc,otherBal=other,npv=0,dscrs=[],totalEquityCF=[],pvDebt=0;
+buildRows.forEach(function(r,i){npv-=r.capex/Math.pow(1+p.wacc,i)});
 for(var t=1;t<=p.life;t++){
  var traffic=p.aadt*Math.pow(1+p.tg,t-1),tariff=p.toll*Math.pow(1+p.pg,t-1),revenue=traffic*tariff*365/1e6,opex=p.opex*Math.pow(1+p.og,t-1),major=(t%p.cycle===0?p.maint*Math.pow(1+p.og,t-1):0),ebitda=revenue-opex-major,dep=p.capex/p.life;
  var ifcInterest=ifcBal*p.ifcRate,otherInterest=otherBal*p.otherRate,ifcDS=t<=p.ifcTenor?ifcPay:0,otherDS=t<=p.otherTenor?otherPay:0,ifcPrincipal=Math.min(ifcBal,Math.max(0,ifcDS-ifcInterest)),otherPrincipal=Math.min(otherBal,Math.max(0,otherDS-otherInterest));
  var taxable=ebitda-dep-ifcInterest-otherInterest,taxableAfterLoss=taxable-nol,cashTax=0;
  if(taxableAfterLoss<0){nol=-taxableAfterLoss}else{cashTax=taxableAfterLoss*p.tax;nol=0}
+ var unlevTaxable=ebitda-dep-unleveredNOL,unlevTax=0;
+ if(unlevTaxable<0){unleveredNOL=-unlevTaxable}else{unlevTax=unlevTaxable*p.tax;unleveredNOL=0}
  var cfads=ebitda-cashTax,totalDS=ifcDS+otherDS,dscr=totalDS>0?cfads/totalDS:null,equityCF=cfads-totalDS;
+ npv+=(ebitda-unlevTax)/Math.pow(1+p.wacc,p.build+t-1);
  ifcBal=Math.max(0,ifcBal-ifcPrincipal);otherBal=Math.max(0,otherBal-otherPrincipal);
  var totalDebt=ifc+other,discount=p.wacc===0?1:Math.pow(1+p.wacc,t);npv+=cfads/discount;
  if(dscr!==null)dscrs.push(dscr);
@@ -230,7 +234,7 @@ document.getElementById('financeOutput').innerHTML='<div class="card"><div class
 }
 function financeDraw(id,data,stacked){var el=document.getElementById(id);if(!el||typeof Chart==='undefined')return;if(financeCharts[id])financeCharts[id].destroy();financeCharts[id]=new Chart(el,{type:'bar',data:data,options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{boxWidth:10,usePointStyle:true}},tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+(c.parsed.y===null?'n.a.':c.parsed.y.toFixed(2)+' EUR m')}}}},scales:{x:{stacked:stacked,grid:{display:false}},y:{stacked:stacked,beginAtZero:!stacked,title:{display:true,text:'EUR million'},ticks:{callback:function(v){return v.toFixed(0)}}}}}})}
 function resetFinance(){var vals={fcost:500,fconstruction:2,ftenor:20,faadt:24000,ftoll:5.5,ftrafficgrowth:2.5,ftollgrowth:2,fopex:35,fopexgrowth:2.5,fmaint:30,fmaintcycle:5,ftax:25,fifcshare:30,fifcrate:7,fifctenor:15,fothershare:35,fotherrate:9,fothertenor:12,fcovenant:1.3,fke:14,fwacc:9};Object.keys(vals).forEach(function(k){document.getElementById(k).value=vals[k]});runFinance()}
-document.querySelectorAll('#finance input').forEach(function(input){input.addEventListener('input',runFinance)});
+
 function countryBrief(){var sector=document.getElementById('countrySector').value,q=escapeHtml(document.getElementById('countryQuestion').value);var focus=sector==='Road concessions'?'Review ANTT concession pipeline, traffic / freight demand, tariff indexation, CAPEX obligations, concession contract protections and subnational / federal authority responsibilities.':sector==='Ports and logistics'?'Review port authority and terminal concession rules, cargo mix, access infrastructure, environmental licensing, hinterland connectivity and shipping / operator concentration.':sector==='Urban transport'?'Review state / municipal PPP frameworks, fare affordability, availability-payment obligations, public counterpart capacity and integration with existing networks.':'Review tariff-setting, offtaker / municipal payment capacity, regulatory autonomy, capex commitments and affordability / universal-service obligations.';document.getElementById('countryBriefOutput').innerHTML='<b>Market-entry question:</b> '+q+'<h4>Evidence-led country view · Brazil</h4><ol><li><b>Strategic context:</b> Brazil is covered by the World Bank Group FY2024–2028 Country Partnership Framework. The WBG country overview reports substantial IFC activity and a long-running PPP track record; this supports market relevance but is not proof of a specific project&#39;s bankability.</li><li><b>Private-sector ecosystem:</b> World Bank PPP country resources identify the legal framework, PPP institutions and PPI data as core diligence sources. The IFC–BNDES study provides context on concession / PPP project preparation and procurement.</li><li><b>Sector diligence — '+escapeHtml(sector)+':</b> '+focus+'</li><li><b>IFC complementarity to test:</b> long-term financing, mobilisation, project structuring / advisory, and environmental and social standards. Check current country strategy, product eligibility and additionality at transaction level.</li><li><b>Next evidence to collect:</b> latest World Bank indicator observations; relevant WBG / IFC country and sector strategy; current regulator pipeline and tender notice; concession contract; state fiscal-capacity evidence; sponsor financials and project cash-flow model.</li></ol><p class="mini">This is a structured research synthesis from the sources linked on this page, not a live API query, country risk rating or IFC investment recommendation.</p>'}
 
 function resetFinance(){document.getElementById('fcost').value=500;document.getElementById('fdebt').value=65;document.getElementById('frate').value=8;document.getElementById('ftenor').value=15;document.getElementById('frevenue').value=125;document.getElementById('fopex').value=35;document.getElementById('fmaint').value=7;document.getElementById('frevgrowth').value=3;document.getElementById('fopexgrowth').value=2.5;document.getElementById('fke').value=14;document.getElementById('ftax').value=25;document.getElementById('fcovenant').value=1.3;runFinance()}
@@ -246,5 +250,5 @@ function injectAgentBoxes(){
  });
 }
 injectAgentBoxes();
-document.querySelectorAll('#finance input').forEach(function(el){el.addEventListener('input',runFinance)});runFinance();
+runFinance();
 </script></body></html>
