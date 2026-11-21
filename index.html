@@ -596,4 +596,35 @@ document.getElementById('bankabilityOutput').innerHTML='<b>'+(npv>0&&minDSCR!==n
 function resetFinance(){var vals={fcost:500,fconstruction:3,ftenor:20,faadt:24000,ftoll:5.5,ftrafficgrowth:2.5,ftollgrowth:2,fopex:35,fopexgrowth:2.5,fmaint:30,fmaintcycle:5,ftax:25,fifcshare:30,fifcrate:7,fifctenor:15,fothershare:35,fotherrate:9,fothertenor:12,fwacc:9,fcovenant:1.3};Object.keys(vals).forEach(function(k){document.getElementById(k).value=vals[k]});runFinance()}
 document.querySelectorAll('#finance input').forEach(function(el){el.addEventListener('input',function(){runFinance()})});
 
-</script><!-- THEMIS Pages redeploy trigger: project-assessment-finance cashflow chart v1 --></body></html>
+</script><!-- THEMIS Pages redeploy trigger: project-assessment-finance cashflow chart v1 --><script>
+/* Isolated, dependency-light handlers: primary navigation and event planner remain usable
+   even if a non-critical legacy workspace script encounters a runtime or syntax issue. */
+(function(){
+  function showPage(id){
+    var page=document.getElementById(id);
+    if(!page||!page.classList.contains('page'))return;
+    document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('active',p===page)});
+    document.querySelectorAll('#nav a[data-page]').forEach(function(a){a.classList.toggle('active',a.dataset.page===id)});
+  }
+  document.getElementById('nav').addEventListener('click',function(e){
+    var a=e.target.closest('a[data-page]');
+    if(a){showPage(a.dataset.page);}
+  });
+  window.addEventListener('hashchange',function(){showPage(location.hash.slice(1));});
+  if(location.hash)showPage(location.hash.slice(1));
+  var events=[];
+  var add=document.querySelector('#crmEventLog');
+  var button=document.querySelector('button[onclick="addCrmEvent()"]');
+  if(button)button.addEventListener('click',function(){
+    var name=document.getElementById('crmEvent').value.trim();
+    if(!name)return;
+    function val(id){var el=document.getElementById(id);return el?el.value:''}
+    function esc(v){return String(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+    events.unshift({name:name,sector:val('crmEventSector'),goal:val('crmEventGoal'),targets:val('crmEventTargets'),follow:val('crmEventFollow')});
+    add.innerHTML=events.map(function(x){return '<p><b>'+esc(x.name)+'</b> · '+esc(x.sector)+'<br>'+esc(x.goal)+'<br><span class="mini">Targets: '+esc(x.targets||'To be mapped')+'<br>Follow-up: '+esc(x.follow||'To be defined')+'</span></p>'}).join('<hr>');
+    document.getElementById('crmEvent').value='';
+    document.getElementById('crmEventTargets').value='';
+    document.getElementById('crmEventFollow').value='';
+  });
+})();
+</script></body></html>
