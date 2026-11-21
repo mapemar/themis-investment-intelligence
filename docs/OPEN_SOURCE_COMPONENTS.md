@@ -16,6 +16,7 @@ THEMIS reuses capability patterns and documented methods, not copied proprietary
 | Document parsing | [Docling](https://github.com/docling-project/docling) and [OpenDataLoader PDF](https://github.com/opendataloader-project/opendataloader-pdf) | Extract text, tables and structure from notices, annual reports and contracts. | Validate extracted content against original documents. |
 | Evidence retrieval | [Qdrant](https://github.com/qdrant/qdrant) | Hybrid / vector search over documents, filtered by country, project, date and source type. | Retrieval must return passages and provenance. |
 | Entity resolution | [Splink](https://github.com/moj-analytical-services/splink) + [RapidFuzz](https://github.com/rapidfuzz/RapidFuzz) | Reconcile investor, sponsor, project and authority names. | Candidate merges require human review. |
+| Macro scenario modelling | [Empirical Macro Toolbox — BVAR_](https://github.com/naffe15/BVAR_) | Optional macroeconomic scenario analysis once sufficiently long, consistent time series are assembled. | MATLAB / GNU Octave and GPL-3.0; review copyleft implications. Not currently integrated or estimated by THEMIS. |
 | BI visualisation | [Apache Superset](https://github.com/apache/superset) | Potential operational analytics for pipeline coverage and portfolio monitoring. | Separate service; not bundled into the static demo. |
 
 ## THEMIS implementation choices
