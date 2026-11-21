@@ -351,6 +351,9 @@ injectAgentBoxes();
 document.querySelectorAll('#finance input').forEach(function(el){el.addEventListener('input',runFinance)});runFinance();
 
 /* Project Assessment & Finance draft engine */
+document.querySelectorAll('#fatabs .tab').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#fatabs .tab').forEach(function(x){x.classList.remove('active')});document.querySelectorAll('#finance .panel').forEach(function(x){x.classList.remove('active')});b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')})});
+faAssessment();
+
 var faRisks=[];
 function faAddRisk(){var t=document.getElementById('faRiskText').value.trim();if(!t)return;faRisks.unshift({text:t,cat:document.getElementById('faRiskCat').value,sev:document.getElementById('faRiskSev').value,owner:document.getElementById('faRiskOwner').value});document.getElementById('faRiskLog').innerHTML=faRisks.map(function(x){return '<p><b>'+escapeHtml(x.cat)+' · '+escapeHtml(x.sev)+'</b><br>'+escapeHtml(x.text)+' <span class="mini">'+escapeHtml(x.owner)+'</span></p>'}).join('<hr>');document.getElementById('faRiskText').value=''}
 function faAssessment(){var xs=[].slice.call(document.querySelectorAll('#finance .faRisk')),assessed=xs.filter(function(x){return x.value!=='Not assessed'}).length,gaps=xs.filter(function(x){return x.value==='Gap identified'||x.value==='Red flag'}).length,red=xs.filter(function(x){return x.value==='Red flag'}).length;document.getElementById('faAssessed').textContent=assessed+' / 6';document.getElementById('faGaps').textContent=gaps;document.getElementById('faAssessmentSummary').innerHTML='<b>'+ (red?'Critical issue(s) flagged':gaps?'Further diligence required':assessed===6?'All dimensions reviewed':'Assessment incomplete') +'.</b> '+red+' red flag(s) and '+gaps+' evidence gap(s) recorded across '+assessed+' assessed dimensions. Review each issue and supporting evidence before proceeding.'}
