@@ -1,0 +1,143 @@
+{
+  "snapshot_date": "2026-11-21",
+  "disclaimer": "Public procurement / concession pipeline records. Not pre-qualified IFC investment leads or evidence of investor appetite. Refresh statuses before engagement.",
+  "sources": [
+    {
+      "source_id": "BR-MOT-2026-PIPE",
+      "publisher": "Brazil Ministry of Transport",
+      "title": "Highways 2026 / Concessões Rodoviárias 2026",
+      "url": "https://www.gov.br/transportes/pt-br/assuntos/concessoes/highways-2026",
+      "publication_date": "2025-11-25",
+      "last_modified": "2026-11-17",
+      "source_type": "official_government_pipeline"
+    },
+    {
+      "source_id": "BR-ANTT-ROTA2J",
+      "publisher": "ANTT",
+      "title": "ANTT approves Rota 2 de Julho tender notice",
+      "url": "https://www.gov.br/antt/pt-br/assuntos/ultimas-noticias-antt/antt-aprova-edital-da-rota-2-de-julho-para-concessao-de-653-3-quilometros-de-rodovias-na-bahia",
+      "publication_date": "2026-09-03",
+      "last_modified": "2026-10-28",
+      "source_type": "regulator_disclosure"
+    },
+    {
+      "source_id": "BR-ANTT-AGROCENTRAL",
+      "publisher": "ANTT",
+      "title": "ANTT approves Rota Agro Central tender notice",
+      "url": "https://www.gov.br/antt/pt-br/assuntos/ultimas-noticias-antt/antt-aprova-edital-da-rota-agro-central-e-assegura-r-6-13-bilhoes-em-investimentos-para-o-centro-norte",
+      "publication_date": "2026-09-08",
+      "last_modified": "2026-10-28",
+      "source_type": "regulator_disclosure"
+    },
+    {
+      "source_id": "BR-ANTAQ-AUCTIONS",
+      "publisher": "ANTAQ",
+      "title": "Port lease and concession auctions",
+      "url": "https://www.gov.br/antaq/pt-br/assuntos/leiloes",
+      "publication_date": "2026-10-26",
+      "last_modified": "2026-11-17",
+      "source_type": "regulator_disclosure"
+    },
+    {
+      "source_id": "BR-MOT-ROADSHOW-2026",
+      "publisher": "Brazil Ministry of Transport",
+      "title": "Roadshow 2026 — federal road concessions",
+      "url": "https://www.gov.br/transportes/pt-br/assuntos/concessoes/conteudos-rodovias-2026/roadshow-en-v40-2026-10-22-web.pdf/%40%40display-file/file",
+      "publication_date": "2026-10-22",
+      "source_type": "official_government_presentation"
+    },
+    {
+      "source_id": "BR-MOT-2027-PIPE",
+      "publisher": "Brazil Ministry of Transport",
+      "title": "Concessões Rodoviárias 2027",
+      "url": "https://www.gov.br/transportes/pt-br/assuntos/concessoes/concessoes-rodoviarias-2027",
+      "publication_date": "2026-10-15",
+      "last_modified": "2026-10-18",
+      "source_type": "official_government_pipeline"
+    }
+  ],
+  "projects": [
+    {
+      "project_id": "BRA-ROAD-ROTA2J",
+      "name": "Rota 2 de Julho",
+      "sector": "toll_road",
+      "location": "Bahia; BR-116 / BR-324",
+      "stage": "Tender notice approved",
+      "project_status": "active_pipeline",
+      "disclosed_capex_brl": 14330000000,
+      "currency": "BRL",
+      "disclosed_capex_basis": "ANTT concession investment estimate; not a financing requirement",
+      "concession_length_km": 653.3,
+      "concession_term_years": 30,
+      "source_ids": [
+        "BR-ANTT-ROTA2J"
+      ],
+      "bd_hypothesis": "Test long-tenor project finance, toll-road operator interest and institutional co-investment; financing needs and sponsor appetite not established."
+    },
+    {
+      "project_id": "BRA-ROAD-AGROCENTRAL",
+      "name": "Rota Agro Central",
+      "sector": "toll_road",
+      "location": "Mato Grosso / Rondônia; BR-070 / BR-174 / BR-364",
+      "stage": "Tender notice approved; auction announced for 17 Dec 2026",
+      "project_status": "active_pipeline",
+      "disclosed_capex_brl": 6130000000,
+      "currency": "BRL",
+      "disclosed_capex_basis": "Investment programme announced by ANTT",
+      "concession_length_km": 887.6,
+      "source_ids": [
+        "BR-ANTT-AGROCENTRAL"
+      ],
+      "bd_hypothesis": "Assess freight corridor and agribusiness logistics exposure; identify concession operators, lenders and infrastructure investors."
+    },
+    {
+      "project_id": "BRA-ROAD-PEQUI",
+      "name": "Rota do Pequi",
+      "sector": "toll_road",
+      "location": "Federal District / Goiás; BR-060 / BR-153",
+      "stage": "Listed in 2026 federal concession pipeline; schedule indicates 17 Dec 2026 auction",
+      "project_status": "active_pipeline",
+      "source_ids": [
+        "BR-MOT-2026-PIPE",
+        "BR-MOT-ROADSHOW-2026"
+      ],
+      "bd_hypothesis": "Early investor mapping; verify latest notice, auction status, capex, concession design and bidder universe."
+    },
+    {
+      "project_id": "BRA-ROAD-INTEGRACAOSUL",
+      "name": "Rota Integração do Sul",
+      "sector": "toll_road",
+      "location": "Rio Grande do Sul; BR-116 / BR-158 / BR-290 / BR-392",
+      "stage": "Upcoming 2027 pipeline",
+      "project_status": "active_pipeline",
+      "source_ids": [
+        "BR-MOT-2027-PIPE"
+      ],
+      "bd_hypothesis": "Early origination and monitoring; identify structurer, project timetable, concession design and logistics linkages."
+    },
+    {
+      "project_id": "BRA-PORT-MUC04",
+      "name": "MUC04 container terminal",
+      "sector": "port_logistics",
+      "location": "Port of Fortaleza, Ceará",
+      "stage": "ANTAQ auction listed as ongoing on 17 Nov 2026",
+      "project_status": "active_pipeline",
+      "source_ids": [
+        "BR-ANTAQ-AUCTIONS"
+      ],
+      "bd_hypothesis": "Map terminal operators, port-logistics investors and trade-related financing partners; terminal capex not stated in source used."
+    },
+    {
+      "project_id": "BRA-PORT-IQI16",
+      "name": "IQI16 solid-bulk terminal",
+      "sector": "port_logistics",
+      "location": "Port of Itaqui, Maranhão",
+      "stage": "ANTAQ auction listed as ongoing on 17 Nov 2026",
+      "project_status": "active_pipeline",
+      "source_ids": [
+        "BR-ANTAQ-AUCTIONS"
+      ],
+      "bd_hypothesis": "Map bulk-terminal operators and agribusiness logistics investors; terminal capex not stated in source used."
+    }
+  ]
+}
