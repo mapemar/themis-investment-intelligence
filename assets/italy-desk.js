@@ -239,25 +239,22 @@
     var verified = P.filter(function (p) { return p.status === 'Verified'; }).length;
     var withIfc = P.filter(function (p) { return p.ifc >= 2; }).length;
     root.innerHTML =
-      '<div class="eyebrow">03 · Investor intelligence · Italy</div><h1>Italy Client Desk</h1>' +
-      '<p class="intro">Client-led business development for Italian corporates, banks, insurers, asset owners and development finance institutions: map and prioritise prospects, prepare engagement and pre-screen integrity before outreach.</p>' +
       '<div class="kpi-strip"><div class="kpi"><strong>' + P.length + '</strong><span>Prospects and archetypes mapped</span></div>' +
       '<div class="kpi"><strong>' + verified + '</strong><span>With verified, sourced facts</span></div>' +
       '<div class="kpi"><strong>' + withIfc + '</strong><span>With a documented IFC relationship</span></div>' +
       '<div class="kpi"><strong>0</strong><span>Contacts or meetings recorded</span></div></div>' +
-      '<div class="card idk-note"><b>How to read this desk.</b> Facts carry a source and were retrieved on ' + RETRIEVED + '. "Routes" are hypotheses to test with IFC colleagues, not statements of interest. Scores rank where to spend research and outreach time; they do not measure appetite.</div>' +
+      '<div class="card idk-note"><b>How to read this desk.</b> Facts carry a source and were retrieved on ' + RETRIEVED + '. "Routes" are hypotheses to test with IFC colleagues, not statements of interest. Scores rank where to spend research and outreach time; they do not measure appetite. Meeting briefs and integrity checks are in Engagement.</div>' +
       '<div class="tabs idk-tabs" id="idkTabs">' +
       '<button class="tab active" data-idk="idkMap">Prospect map & priority</button>' +
       '<button class="tab" data-idk="idkProfile">Prospect profile</button>' +
-      '<button class="tab" data-idk="idkBrief">Engagement brief (EN / IT)</button>' +
-      '<button class="tab" data-idk="idkIntegrity">Integrity pre-screen</button>' +
       '<button class="tab" data-idk="idkMethod">Scoring method</button></div>' +
-      '<div class="idk-panel active" id="idkMap"></div><div class="idk-panel" id="idkProfile"></div><div class="idk-panel" id="idkBrief"></div><div class="idk-panel" id="idkIntegrity"></div><div class="idk-panel" id="idkMethod"></div>';
+      '<div class="idk-panel active" id="idkMap"></div><div class="idk-panel" id="idkProfile"></div><div class="idk-panel" id="idkMethod"></div>';
     root.querySelectorAll('#idkTabs .tab').forEach(function (b) {
       b.addEventListener('click', function () { showTab(b.dataset.idk); });
     });
-    renderMap(); renderProfile(P[0].id); renderBrief(); renderIntegrity(P[0].id); renderMethod();
+    renderMap(); renderProfile(P[0].id); renderMethod();
   }
+  function openEng(panel) { if (window.go) window.go('crm'); if (window.THEMIS_PG) window.THEMIS_PG('en', panel); }
   function showTab(id) {
     document.querySelectorAll('#idkTabs .tab').forEach(function (x) { x.classList.toggle('active', x.dataset.idk === id); });
     document.querySelectorAll('#italy .idk-panel').forEach(function (x) { x.classList.toggle('active', x.id === id); });
@@ -306,13 +303,13 @@
       '<button class="btn alt" id="idkToBrief">Prepare engagement brief →</button> <button class="btn alt" id="idkToInteg">Integrity pre-screen →</button></div></div>';
     $('idkProfileSel').addEventListener('change', function (e) { renderProfile(e.target.value); });
     $('idkFit').addEventListener('change', function (e) { state.fit[p.id] = +e.target.value; renderProfile(p.id); rows(); });
-    $('idkToBrief').addEventListener('click', function () { $('idkBriefSel').value = p.id; buildBrief(); showTab('idkBrief'); });
-    $('idkToInteg').addEventListener('click', function () { renderIntegrity(p.id); showTab('idkIntegrity'); });
+    $('idkToBrief').addEventListener('click', function () { $('idkBriefSel').value = p.id; buildBrief(); openEng('enPrepare'); });
+    $('idkToInteg').addEventListener('click', function () { renderIntegrity(p.id); openEng('enIntegrity'); });
   }
 
   // ---------------------------------------------------------------- engagement brief
   function renderBrief() {
-    $('idkBrief').innerHTML = '<div class="card"><div class="input-grid">' +
+    $('engBrief').innerHTML = '<div class="card"><div class="input-grid">' +
       '<div class="field"><label>Prospect</label>' + pickList('idkBriefSel', 'cdp') + '</div>' +
       '<div class="field"><label>Objective</label><select id="idkObj">' + OBJECTIVES.map(function (o) { return '<option value="' + o.id + '">' + esc(o.en) + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label>Language</label><select id="idkLang"><option value="en">English</option><option value="it">Italiano</option></select></div></div>' +
@@ -344,15 +341,15 @@
   // ---------------------------------------------------------------- integrity
   function renderIntegrity(pid) {
     var p = byId(pid) || P[0], ist = integ(p.id);
-    $('idkIntegrity').innerHTML = '<div class="card"><div class="field"><label>Prospect</label>' + pickList('idkIntegSel', p.id) + '</div>' +
+    $('engIntegrity').innerHTML = '<div class="card"><div class="field"><label>Prospect</label>' + pickList('idkIntegSel', p.id) + '</div>' +
       '<p class="mini">Pre-screen before any outreach, aligned with the vacancy\'s "background and integrity checks". It does not replace IFC\'s integrity due diligence, KYC or compliance clearance. Statuses are kept for this browser session only.</p>' +
       '<table><thead><tr><th>Check</th><th>Source</th><th>Status</th></tr></thead><tbody>' +
       INTEGRITY.map(function (c) {
         var v = ist[c.id] || 'Not started';
-        return '<tr><td>' + esc(c.label) + '</td><td>' + (c.u ? '<a class="source-link" href="' + esc(c.u) + '" target="_blank" rel="noopener">Open</a>' : '<span class="mini">Internal / manual</span>') + '</td><td><select data-check="' + c.id + '">' + ISTATES.map(function (s) { return '<option' + (s === v ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></td></tr>';
+        return '<tr><td>' + esc(c.label) + '</td><td>' + (c.u ? '<a class="source-link" href="' + esc(c.u) + '" target="_blank" rel="noopener">' + esc(c.label.split(' (')[0]) + '</a>' : '<span class="mini">Internal / manual</span>') + '</td><td><select data-check="' + c.id + '">' + ISTATES.map(function (s) { return '<option' + (s === v ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></td></tr>';
       }).join('') + '</tbody></table><div id="idkIntegSummary" class="result"></div></div>';
     $('idkIntegSel').addEventListener('change', function (e) { renderIntegrity(e.target.value); });
-    $('idkIntegrity').querySelectorAll('select[data-check]').forEach(function (s) {
+    $('engIntegrity').querySelectorAll('select[data-check]').forEach(function (s) {
       s.addEventListener('change', function () { ist[s.dataset.check] = s.value; summary(); });
     });
     function summary() {
@@ -431,7 +428,7 @@
         '<h4>Information gaps before engagement</h4><ul>' + gaps.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul>' +
         '<p><button class="btn alt" id="coToDesk">Open the client profile →</button></p>' +
         '<p class="mini">Routes are hypotheses for internal discussion. IFC financing is subject to eligibility, appraisal and Board approval.</p>';
-      $('coToDesk').addEventListener('click', function () { if (window.go) window.go('italy'); renderProfile(p.id); showTab('idkProfile'); });
+      $('coToDesk').addEventListener('click', function () { if (window.go) window.go('clients'); if (window.THEMIS_PG) window.THEMIS_PG('cl', 'clItaly'); renderProfile(p.id); showTab('idkProfile'); });
     }
   }
 
@@ -454,33 +451,47 @@
     ['Relationship Managers (CWE)', 'Coordination for existing clients under agreed engagement plans', 'vacancy']
   ];
   function renderEngagement() {
-    var el = $('italyEcosystem'); if (!el) return;
-    el.innerHTML = '<div class="section"><div><h2>Italy ecosystem, organiser mode and WBG coordination</h2><p>Verified Italian platforms, a planner for roundtables and webinars, and who to involve inside the World Bank Group.</p></div></div>' +
-      '<div class="grid two"><div class="card"><h3>Verified Italian event platforms</h3>' +
+    var ev = $('engEvents'), co = $('engCoord');
+    if (co) co.innerHTML = '<div class="card"><h3>Who to involve inside the World Bank Group</h3><table><tr><th>Unit</th><th>When to involve</th></tr>' +
+      UNITS.map(function (u) { return '<tr><td><b>' + esc(u[0]) + '</b></td><td>' + esc(u[1]) + '<br>' + src(u[2]) + '</td></tr>'; }).join('') + '</table></div>';
+    if (!ev) return;
+    ev.innerHTML = '<div class="grid two"><div class="card"><h3>Verified Italian event platforms</h3>' +
       EVENTS.map(function (e) { return '<div class="event"><b>' + esc(e.name) + '</b><p>' + esc(e.where) + ' · ' + esc(e.when) + '<br><span class="mini">' + esc(e.who) + '. Relevance: ' + esc(e.why) + '.</span><br>' + src(e.src) + '</p></div>'; }).join('') +
-      '<p class="mini">Next editions must be confirmed on the organiser\'s site before planning. Other platforms stay in the illustrative map above until verified.</p></div>' +
-      '<div class="card"><h3>WBG internal coordination map</h3><table><tr><th>Unit</th><th>When to involve</th></tr>' +
-      UNITS.map(function (u) { return '<tr><td><b>' + esc(u[0]) + '</b></td><td>' + esc(u[1]) + '<br>' + src(u[2]) + '</td></tr>'; }).join('') + '</table></div></div>' +
-      '<div class="card" style="margin-top:14px"><h3>Organiser mode: roundtable or webinar</h3><p class="mini">Plan an IFC-hosted event under the guidance of the WBG Country Manager for Italy, as the vacancy describes. Invitees are drawn from the Italy Client Desk; no personal contacts are invented.</p>' +
-      '<div class="input-grid"><div class="field"><label>Format</label><select id="orgFormat"><option>Roundtable (10–15 participants)</option><option>Webinar</option><option>Half-day conference</option></select></div>' +
+      '<p class="mini">Only platforms with a verified source are listed. Confirm the next edition on the organiser\'s site before planning.</p></div>' +
+      '<div class="card"><h3>Event planner</h3><div class="input-grid">' +
+      '<div class="field"><label>Mode</label><select id="orgMode"><option value="attend">Attend an event</option><option value="organise">Organise a roundtable or webinar</option></select></div>' +
+      '<div class="field"><label>Event</label><select id="orgEvent">' + EVENTS.map(function (e, i) { return '<option value="' + i + '">' + esc(e.name) + '</option>'; }).join('') + '<option value="other">Other (type below)</option></select></div>' +
       '<div class="field"><label>Audience segment</label><select id="orgSeg">' + ASSOC.map(function (a) { return '<option value="' + esc(a[1]) + '">' + esc(a[2]) + '</option>'; }).join('') + '</select></div>' +
-      '<div class="field"><label>Theme</label><select id="orgTheme"><option>Co-investing with IFC in emerging markets</option><option>Mattei Plan countries: private investment opportunities</option><option>Emerging-market private credit for Italian institutional investors</option><option>Managing political risk: IFC and MIGA instruments</option></select></div>' +
-      '<div class="field"><label>Host / partner (to agree)</label><input id="orgHost" placeholder="e.g. sector association, university, chamber"></div></div>' +
-      '<button class="btn" id="orgBuild">Build event plan</button><div id="orgOut" class="result"></div></div>';
+      '<div class="field"><label>Theme / objective</label><select id="orgTheme"><option>Co-investing with IFC in emerging markets</option><option>Mattei Plan countries: private investment opportunities</option><option>Emerging-market private credit for Italian institutional investors</option><option>Managing political risk: IFC and MIGA instruments</option></select></div></div>' +
+      '<div class="field"><label>Other event or host / partner (optional)</label><input id="orgHost" placeholder="Name of event, association, university or chamber"></div>' +
+      '<button class="btn" id="orgBuild">Build plan</button><div id="orgOut" class="result"></div></div></div>';
     $('orgBuild').addEventListener('click', buildEvent);
+    ['orgMode', 'orgEvent', 'orgSeg', 'orgTheme'].forEach(function (id) { $(id).addEventListener('change', buildEvent); });
     buildEvent();
   }
   function buildEvent() {
-    var seg = $('orgSeg').value, fmt = $('orgFormat').value, theme = $('orgTheme').value, host = $('orgHost').value.trim();
+    var organise = $('orgMode').value === 'organise', seg = $('orgSeg').value, theme = $('orgTheme').value, host = $('orgHost').value.trim();
+    $('orgEvent').disabled = organise;
     var assoc = ASSOC.filter(function (a) { return a[1] === seg; })[0];
     var inv = P.filter(function (p) { return p.type === seg; }).sort(function (a, b) { return score(b) - score(a); });
-    var speakers = { 'Banks': 'Syndications & Mobilization; Trade & supply-chain finance', 'Insurers': 'Syndications & Mobilization (MCPP)', 'Asset managers': 'Syndications & Mobilization (MCPP)', 'Foundations': 'Blended finance; relevant Industry team', 'Corporates & sponsors': 'Relevant Industry teams; MIGA', 'Family offices': 'Relevant Industry team; funds' }[seg] || 'Relevant Industry team';
-    $('orgOut').innerHTML = '<h3>' + esc(fmt) + ' · ' + esc(theme) + '</h3>' +
-      '<p><b>Audience:</b> ' + esc(assoc[2]) + (host ? ' · <b>Host:</b> ' + esc(host) : ' · <b>Host:</b> to agree (candidate network: ' + esc(assoc[0]) + ')') + '</p>' +
-      '<p><b>IFC / WBG speakers (roles):</b> CWE business development; ' + esc(speakers) + '. Final line-up under the guidance of the WBG Country Manager for Italy.</p>' +
-      '<p><b>Invitee shortlist from the Client Desk:</b> ' + (inv.length ? inv.map(function (p) { return esc(p.name) + ' (' + score(p) + ')'; }).join(' · ') : 'none mapped yet: research this segment first') + '</p>' +
-      '<p><b>Conversion targets to track:</b> participants → follow-up meetings within 30 days → qualified leads (project or co-investment interest) → leads registered in the pipeline with a named Industry team.</p>' +
-      '<p class="mini">Planning template. Speakers, partners and invitations require internal approval; no participation is implied.</p>';
+    var speakers = { 'Banks': 'Syndications & Mobilization; trade and supply-chain finance', 'Insurers': 'Syndications & Mobilization (MCPP)', 'Asset managers': 'Syndications & Mobilization (MCPP)', 'Foundations': 'Blended finance; relevant Industry team', 'Corporates & sponsors': 'Relevant Industry teams; MIGA', 'Family offices': 'Relevant Industry team; funds' }[seg] || 'Relevant Industry team';
+    var targets = inv.length ? inv.map(function (p) { return esc(p.name) + ' (' + score(p) + ')'; }).join(' · ') : 'none mapped yet: research this segment first';
+    var head, body;
+    if (organise) {
+      head = 'Organise · ' + esc(theme);
+      body = '<p><b>Audience:</b> ' + esc(assoc[2]) + ' · <b>Host:</b> ' + (host ? esc(host) : 'to agree (candidate network: ' + esc(assoc[0]) + ')') + '</p>' +
+        '<p><b>IFC / WBG speakers (roles):</b> CWE business development; ' + esc(speakers) + '. Line-up under the guidance of the WBG Country Manager for Italy.</p>' +
+        '<p><b>Invitee shortlist from the Client Desk:</b> ' + targets + '</p>';
+    } else {
+      var ei = $('orgEvent').value, e = ei === 'other' ? null : EVENTS[+ei];
+      head = 'Attend · ' + (e ? esc(e.name) : (host ? esc(host) : 'event to specify'));
+      body = (e ? '<p>' + esc(e.where) + ' · ' + esc(e.when) + ' ' + src(e.src) + '</p>' : '<p class="mini">Not a verified platform: confirm organiser, date and audience before committing time.</p>') +
+        '<p><b>Objective:</b> ' + esc(theme) + '</p><p><b>Who to meet (from the Client Desk, ' + esc(assoc[2]) + '):</b> ' + targets + '</p>' +
+        '<p><b>Before the event:</b> prepare a brief per target (Engagement → Prepare a meeting) and complete the integrity pre-screen.</p>';
+    }
+    $('orgOut').innerHTML = '<h3>' + head + '</h3>' + body +
+      '<p><b>Conversion to track:</b> contacts → follow-up meetings within 30 days → qualified leads (project or co-investment interest) → leads registered in the pipeline with a named Industry team.</p>' +
+      '<p class="mini">Planning template. Participation, speakers and invitations require internal approval.</p>';
   }
 
   // ---------------------------------------------------------------- AI validation (Architecture page)
@@ -494,29 +505,11 @@
       '<p class="mini"><b>In this prototype:</b> no language model runs in the browser. Content on the Italy Client Desk was researched with AI assistance and verified against the linked sources on ' + RETRIEVED + '. Briefs and plans are produced by deterministic templates. This mirrors the vacancy criterion on using commercially available LLM tools, validating outputs against primary sources and remaining accountable for recommendations.</p></div>';
   }
 
-  // ---------------------------------------------------------------- Overview tour
-  function renderTour() {
-    var el = $('cweTour'); if (!el) return;
-    var steps = [
-      ['italy', 'Prioritise Italian prospects', 'Client segments from the vacancy, sourced facts, transparent score, deepen vs originate.'],
-      ['origin', 'Start from the client', 'Corporate or investor entry point → WBG route, precedents, information gaps.'],
-      ['italy', 'Pre-screen integrity', 'Sanctions, debarment, registry and beneficial-ownership checks before outreach.'],
-      ['italy', 'Prepare the meeting (EN / IT)', 'Brief with verified facts, hypotheses, questions and colleagues to involve.'],
-      ['crm', 'Convene and follow up', 'Verified Italian platforms, roundtable planner, WBG coordination map.'],
-      ['finance', 'Test a deal', 'Concession cash-flow model with DSCR, LLCR and scenarios for a sponsor\'s project.']
-    ];
-    el.innerHTML = '<div class="card idk-tour"><div class="eyebrow">Use case · IFC business development in Italy</div><h2 style="margin-top:6px">From Italian client to emerging-market transaction</h2>' +
-      '<p>IFC reports a long-term portfolio of about $1.3 billion with Italian partners (June 2024), including recent transactions with Eni, Enel, Contship Italia, ASTM, UniCredit and Intesa Sanpaolo. ' + src('ifcItaly') + '</p>' +
-      '<div class="idk-steps">' + steps.map(function (s, i) { return '<button class="idk-step" data-go="' + s[0] + '"><b>' + (i + 1) + ' · ' + esc(s[1]) + '</b><span>' + esc(s[2]) + '</span></button>'; }).join('') + '</div>' +
-      '<p class="mini">Three-minute path through the platform. Independent prototype; not affiliated with IFC.</p></div>';
-    el.querySelectorAll('.idk-step').forEach(function (b) { b.addEventListener('click', function () { if (window.go) window.go(b.dataset.go); }); });
-  }
-
   function init() {
-    [renderDesk, renderOrigin, renderEngagement, renderAI, renderTour].forEach(function (f) {
+    [renderDesk, renderBrief, function () { renderIntegrity(P[0].id); }, renderOrigin, renderEngagement, renderAI].forEach(function (f) {
       try { f(); } catch (err) { console.error('Italy Client Desk:', f.name, err); }
     });
   }
-  window.THEMIS_ITALY = { prospects: P, score: score, sources: S };
+  window.THEMIS_ITALY = { prospects: P, score: score, sources: S, byId: byId, tier: tier, src: src, esc: esc, statusTag: statusTag, precedents: PRECEDENTS, renderProfile: renderProfile, showTab: showTab, retrieved: RETRIEVED };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

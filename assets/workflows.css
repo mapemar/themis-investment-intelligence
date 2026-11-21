@@ -1,0 +1,30 @@
+/* THEMIS · question-driven workflows — reuses platform palette */
+.q-line{margin:-4px 0 16px;padding:10px 14px;background:#f7fbfb;border-left:3px solid var(--t);border-radius:8px;font-size:14px;color:var(--ink)}
+.pg-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.pg-panel{display:none}
+.pg-panel.active{display:block}
+.qcards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.qcard{position:relative;background:var(--white);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px 56px}
+.qcard h3{margin:0 0 8px;font-size:16px;color:var(--n)}
+.qcard p{margin:6px 0;font-size:13px}
+.qnum{position:absolute;left:16px;top:16px;width:28px;height:28px;border-radius:50%;background:var(--n);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.qpath{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.qpath span{color:var(--m)}
+.qstep{font:inherit;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid var(--t);background:#f0f7f7;color:var(--t);cursor:pointer}
+.qstep:hover{background:var(--t);color:#fff}
+.smap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.smap-item{text-align:left;font:inherit;background:var(--white);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;color:inherit}
+.smap-item:hover{border-color:var(--t)}
+.smap-item b{display:block;color:var(--n);margin-bottom:4px;font-size:13px}
+.smap-item span{font-size:12px;color:var(--m)}
+.dev-stages{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.dev-stage{font:inherit;font-size:13px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--white);cursor:pointer}
+.dev-stage.active{background:var(--n);color:#fff;border-color:var(--n)}
+.fl-card{margin:0 0 18px;border-top:4px solid var(--t)}
+.fl-check{display:block;font-size:13px;margin:4px 0}
+#devOut ul,#flOut ul{margin:4px 0 4px 18px}
+@media(max-width:850px){.qcards{grid-template-columns:1fr}.smap{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.smap{grid-template-columns:1fr}}
+.fl-check{display:flex;align-items:center;gap:8px}
+.fl-check input,#devOut input[type=checkbox]{width:auto;margin:0;flex:0 0 auto}
+#devOut li label{display:flex;align-items:center;gap:8px;font-weight:400}

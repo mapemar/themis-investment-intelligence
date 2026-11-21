@@ -4,6 +4,19 @@
 
 **Demo URL (main branch only):** https://mapemar.github.io/themis-investment-intelligence/
 
+## Question-driven structure (21 November 2026)
+
+The Overview starts from seven questions an IFC business-development officer in Italy asks, each linked to a path through the platform. Navigation has eight entries: Overview, AI Architecture & Agents, and six workspaces:
+
+1. **Clients & Investors** — Italy Client Desk (sourced prospects, priority score) and European comparators (identification data only).
+2. **Opportunities** — from client to opportunity; public pipeline (Brazil, verified 21 Nov 2026); from project to Italian co-investors; project development stages and matching WBG instruments.
+3. **Country Intelligence** — verified Brazil diagnostic; live World Bank WDI indicators for any country via the public API.
+4. **Project Assessment & Finance** — first-look screen of an incoming proposal against IFC's published eligibility criteria and Performance Standards; assessment register; cash-flow model and scenarios.
+5. **Engagement** — meeting brief EN/IT, integrity pre-screen, verified events and a single attend/organise planner, WBG coordination map, action log.
+6. **Sources & Evidence** — one register of every source used, built from the pages.
+
+Former pages (Investor Intelligence, Italy Client Desk, Opportunity Origination, Project Pipeline, Investment Matching, Project Assessment) were merged; their old links redirect. Figures that could not be verified were removed (Brazil private credit, WGI percentile, Human Capital Index, R$190.4bn roadshow total); pipeline stages and dates were updated from official and specialist sources.
+
 ## Italy Client Desk (November 2026)
 
 Client-led business development for IFC in Italy: Italian corporates, banks, insurers, pension funds, asset managers, foundations, family offices and DFIs looking at emerging markets alongside the World Bank Group. Code in `assets/italy-desk.js` and `assets/italy-desk.css`, isolated from the rest of the app.

@@ -1,8 +1,8 @@
 """Browser smoke tests for the THEMIS static demo.
 
-Syntax checks alone did not catch the blank-page regression (a CSS rule hid the
-active page). These tests open the page in a real Chromium and check what a user
-actually sees.
+They open the page in a real Chromium and check what a user sees: every page renders, every
+control works without console errors, legacy links still land on the right workspace, removed
+(unverifiable) figures stay removed, and the layout fits a phone screen.
 
 Run locally:   pytest browser_tests -q
 Run on live:   THEMIS_URL=https://mapemar.github.io/themis-investment-intelligence/ pytest browser_tests -q
@@ -15,10 +15,9 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = os.environ.get("THEMIS_URL") or (ROOT / "index.html").as_uri()
-CHROME = os.environ.get("THEMIS_CHROME")  # optional path to a system Chrome
-
-EXPECTED_ORDER = ["home", "architecture"]  # Overview first, AI Architecture second
-MIN_PAGE_HEIGHT = 300  # px; a visible workspace is always taller than this
+CHROME = os.environ.get("THEMIS_CHROME")
+PAGES = ["home", "architecture", "clients", "opportunities", "country", "finance", "crm", "evidence"]
+MIN_PAGE_HEIGHT = 300
 
 
 @pytest.fixture(scope="module")
@@ -43,68 +42,55 @@ def page(browser):
     pg.close()
 
 
-def nav_ids(pg):
-    return pg.evaluate("[...document.querySelectorAll('#nav a[data-page]')].map(a => a.dataset.page)")
+def visible_pages(pg):
+    return pg.evaluate("[...document.querySelectorAll('section.page')].filter(e => getComputedStyle(e).display !== 'none').map(e => e.id)")
 
 
-def visible_height(pg, pid):
-    return pg.evaluate(
-        "id => { const e = document.getElementById(id);"
-        " return e && getComputedStyle(e).display !== 'none' ? e.getBoundingClientRect().height : 0 }",
-        pid,
-    )
+def height(pg, pid):
+    return pg.evaluate("id => { const e = document.getElementById(id); return e && getComputedStyle(e).display !== 'none' ? e.getBoundingClientRect().height : 0 }", pid)
 
 
-def test_loads_without_errors_and_overview_first(page):
+def test_navigation_structure(page):
     page.goto(BASE_URL)
     page.wait_for_timeout(500)
-    ids = nav_ids(page)
-    assert ids[:2] == EXPECTED_ORDER
-    assert len(ids) >= 9
-    assert visible_height(page, "home") > MIN_PAGE_HEIGHT
+    assert page.evaluate("[...document.querySelectorAll('#nav a[data-page]')].map(a => a.dataset.page)") == PAGES
+    assert height(page, "home") > MIN_PAGE_HEIGHT
     assert page.errors == []
 
 
 def test_every_nav_item_shows_its_page(page):
     page.goto(BASE_URL)
     page.wait_for_timeout(500)
-    for pid in nav_ids(page):
+    for pid in PAGES:
         page.click(f"#nav a[data-page='{pid}']")
-        page.wait_for_timeout(150)
-        assert visible_height(page, pid) > MIN_PAGE_HEIGHT, f"page '{pid}' is blank after navigation"
-        shown = page.evaluate("[...document.querySelectorAll('.page')].filter(e => getComputedStyle(e).display !== 'none').map(e => e.id)")
-        assert shown == [pid], f"expected only '{pid}' visible, got {shown}"
+        page.wait_for_timeout(120)
+        assert height(page, pid) > MIN_PAGE_HEIGHT, f"page '{pid}' is blank"
+        assert visible_pages(page) == [pid]
     assert page.errors == []
 
 
-@pytest.mark.parametrize("pid", ["investor", "finance", "crm"])
-def test_deep_link_opens_page(page, pid):
-    page.goto(f"{BASE_URL}#{pid}")
+@pytest.mark.parametrize("old,new", [("investor", "clients"), ("italy", "clients"), ("origin", "opportunities"), ("pipeline", "opportunities"), ("match", "opportunities"), ("project", "finance"), ("finance", "finance"), ("crm", "crm")])
+def test_old_and_deep_links(page, old, new):
+    page.goto(f"{BASE_URL}#{old}")
     page.wait_for_timeout(500)
-    assert visible_height(page, pid) > MIN_PAGE_HEIGHT
+    assert visible_pages(page) == [new]
 
 
-def test_investor_selects_populated(page):
+def test_overview_questions_route_to_workspaces(page):
     page.goto(BASE_URL)
     page.wait_for_timeout(500)
-    for sid in ["iiProfileSelect", "iiEngageInvestor"]:
-        n = page.evaluate("id => { const e = document.getElementById(id); return e ? e.options.length : -1 }", sid)
-        assert n > 0, f"#{sid} has no investor options"
+    assert page.locator(".qcard").count() == 7
+    page.locator(".qcard").nth(5).locator(".qstep").first.click()
+    page.wait_for_timeout(200)
+    assert visible_pages(page) == ["opportunities"]
+    assert page.locator("#opInvestors").is_visible()
     assert page.errors == []
-
-
-def test_finance_kpis_render(page):
-    page.goto(f"{BASE_URL}#finance")
-    page.wait_for_timeout(500)
-    kpis = page.evaluate("[...document.querySelectorAll('#finance .kpi')].map(e => e.innerText)")
-    assert len(kpis) >= 4
-    assert all(any(ch.isdigit() for ch in k) for k in kpis[:4])
 
 
 def test_all_buttons_and_tabs_click_without_errors(page):
     page.goto(BASE_URL)
     page.wait_for_timeout(500)
-    for pid in nav_ids(page):
+    for pid in PAGES:
         page.click(f"#nav a[data-page='{pid}']")
         sel = f"#{pid} button, #{pid} .tab, #{pid} [onclick]"
         for i in range(page.locator(sel).count()):
@@ -115,55 +101,72 @@ def test_all_buttons_and_tabs_click_without_errors(page):
     assert page.errors == []
 
 
-def test_italy_client_desk_workflow(page):
-    page.goto(f"{BASE_URL}#italy")
+def test_client_desk_brief_and_integrity(page):
+    page.goto(f"{BASE_URL}#clients")
     page.wait_for_timeout(500)
     assert page.locator("#idkRows tr[data-pid]").count() >= 15
     page.select_option("#idkFilter", "Insurers")
     assert page.locator("#idkRows tr[data-pid]").count() == 2
-    page.select_option("#idkFilter", "All")
-    page.click("button[data-idk=idkBrief]")
+    page.goto(f"{BASE_URL}#crm")
+    page.wait_for_timeout(400)
     page.select_option("#idkLang", "it")
     assert "Nota per l'incontro" in page.inner_text("#idkBriefOut")
-    page.click("button[data-idk=idkIntegrity]")
+    page.click("button[data-panel=enIntegrity]")
     page.select_option("select[data-check=eu]", "Flag")
     assert "flag" in page.inner_text("#idkIntegSummary").lower()
     assert page.errors == []
 
 
-def test_client_led_origination_and_organiser(page):
-    page.goto(f"{BASE_URL}#origin")
+def test_first_look_screen_verdicts(page):
+    page.goto(f"{BASE_URL}#finance")
     page.wait_for_timeout(500)
-    page.select_option("#coRegion", "Latin America")
-    out = page.inner_text("#coOut")
-    assert "Possible World Bank Group route" in out and "Enel" in out
-    page.goto(f"{BASE_URL}#crm")
-    page.wait_for_timeout(300)
-    page.click("#orgBuild")
-    assert "Invitee shortlist" in page.inner_text("#orgOut")
+    page.select_option("#flOwn", "public")
+    assert "Not an IFC investment" in page.inner_text("#flOut")
+    page.select_option("#flOwn", "private")
+    page.select_option("#flStage", "idea")
+    assert "Early stage" in page.inner_text("#flOut")
+    page.select_option("#flInteg", "flag")
+    assert "Stop" in page.inner_text("#flOut")
+
+
+def test_project_to_investors_and_development(page):
+    page.goto(f"{BASE_URL}#opportunities")
+    page.wait_for_timeout(400)
+    page.click("button[data-panel=opInvestors]")
+    assert "ASTM" in page.inner_text("#piOut")
+    page.select_option("#piProject", "muc")
+    assert "Contship" in page.inner_text("#piOut")
+    page.click("button[data-panel=opDevelop]")
+    page.locator(".dev-stage").nth(3).click()
+    assert "Bankable" in page.inner_text("#devOut")
     assert page.errors == []
 
 
-def test_every_fact_on_italy_desk_has_a_source(page):
+def test_every_desk_fact_has_a_source_and_register_is_built(page):
     page.goto(BASE_URL)
     page.wait_for_timeout(500)
-    missing = page.evaluate(
-        "(() => { const I = window.THEMIS_ITALY; const bad = [];"
-        " I.prospects.forEach(p => p.facts.forEach(f => { if (!I.sources[f[1]] || !I.sources[f[1]].u) bad.push(p.id) }));"
-        " return bad })()"
-    )
+    missing = page.evaluate("(() => { const I = window.THEMIS_ITALY; const bad = []; I.prospects.forEach(p => p.facts.forEach(f => { if (!I.sources[f[1]] || !I.sources[f[1]].u) bad.push(p.id) })); return bad })()")
     assert missing == []
+    page.click("#nav a[data-page='evidence']")
+    assert page.locator("#srRows tr").count() > 30
+
+
+def test_unverified_figures_stay_removed(page):
+    page.goto(BASE_URL)
+    page.wait_for_timeout(500)
+    text = page.evaluate("document.body.textContent")
+    for removed in ["75.1% GDP", "40.1 percentile", "R$ 190.4bn", "rank 80/142"]:
+        assert removed not in text
 
 
 def test_finance_base_case_is_coherent(page):
     page.goto(f"{BASE_URL}#finance")
     page.wait_for_timeout(500)
-    kpis = page.evaluate("[...document.querySelectorAll('#financeKpis .kpi strong')].map(e => parseFloat(e.innerText))")
-    npv, irr, min_dscr = kpis[0], kpis[1], kpis[2]
-    assert npv > 0 and irr > 0 and min_dscr >= 1.3
+    k = page.evaluate("[...document.querySelectorAll('#financeKpis .kpi strong')].map(e => parseFloat(e.innerText))")
+    assert k[0] > 0 and k[1] > 0 and k[2] >= 1.3
 
 
-@pytest.mark.parametrize("pid", ["home", "italy", "country", "finance", "crm"])
+@pytest.mark.parametrize("pid", PAGES)
 def test_no_horizontal_overflow_on_mobile(browser, pid):
     pg = browser.new_page(viewport={"width": 390, "height": 844})
     pg.goto(f"{BASE_URL}#{pid}")
