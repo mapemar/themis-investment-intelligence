@@ -4,6 +4,18 @@
 
 **Demo URL (main branch only):** https://mapemar.github.io/themis-investment-intelligence/
 
+## Italy Client Desk (November 2026)
+
+Client-led business development for IFC in Italy: Italian corporates, banks, insurers, pension funds, asset managers, foundations, family offices and DFIs looking at emerging markets alongside the World Bank Group. Code in `assets/italy-desk.js` and `assets/italy-desk.css`, isolated from the rest of the app.
+
+- **Italy Client Desk** (under Investor Intelligence): 18 prospects and archetypes; sourced facts with retrieval date; documented IFC relationships; transparent priority score (evidence + editable analyst judgement); deepen vs originate mode.
+- **Engagement brief (EN / IT):** deterministic template from the verified profile, category-level constraints, meeting questions and WBG colleagues to involve.
+- **Integrity pre-screen:** sanctions, World Bank debarment, company registry and beneficial-ownership checks with official links; session-only status; does not replace IFC integrity due diligence.
+- **Client-led origination** (Opportunity Origination): corporate or investor entry point → possible WBG route (IFC loans/equity, B loans, MCPP, MIGA, GTFP, Upstream), Italian precedents from IFC disclosures, information gaps.
+- **Investor Engagement:** verified Italian event platforms, organiser mode for roundtables and webinars, WBG internal coordination map.
+- **AI Architecture:** "How AI is used and validated" — draft, verify against primary sources, label, decide.
+- Fixes: invisible Overview headline, mobile overflow, incoherent synthetic base case of the financial model (toll and OPEX defaults recalibrated; engine unchanged).
+
 ## THEMIS 2.0 recruiter demo
 
 This branch expands the initial static prototype into a practical, interactive demonstration:

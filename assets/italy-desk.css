@@ -1,0 +1,30 @@
+/* THEMIS · Italy Client Desk — scoped styles; reuses the platform palette (:root variables) */
+#italy .idk-note{margin:14px 0;background:#f7fbfb;border-left:4px solid var(--t)}
+#italy .idk-tabs{margin:16px 0 12px;display:flex;flex-wrap:wrap;gap:8px}
+#italy .idk-panel{display:none}
+#italy .idk-panel.active{display:block}
+#italy h4,#origin .idk-origin h4,.idk-brief h4{margin:14px 0 6px;color:var(--n);font-size:14px}
+.idk-filters{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.idk-table{overflow-x:auto}
+.idk-table tr[data-pid]{cursor:pointer}
+.idk-table tr[data-pid]:hover td{background:#f4f8fb}
+.idk-score{display:inline-block;padding:3px 9px;border-radius:999px;font-weight:700;font-size:12px;white-space:nowrap}
+.idk-score.tA{background:#e3f4ef;color:#0d6b52}
+.idk-score.tB{background:#fdf3e1;color:#8a5a12}
+.idk-score.tC{background:#eef1f5;color:var(--m)}
+.idk-brief{margin-top:14px}
+.idk-brief ol,.idk-brief ul{margin:4px 0 4px 18px}
+.idk-origin{margin:16px 0;border-top:4px solid var(--t)}
+.idk-ai{margin:16px 0;border-top:4px solid var(--t)}
+.idk-chain{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.idk-chain div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+.idk-chain b{display:block;color:var(--n);margin-bottom:4px}
+.idk-chain span{font-size:13px;color:var(--ink)}
+.idk-tour{margin:16px 0;border-top:4px solid var(--g)}
+.idk-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.idk-step{text-align:left;background:var(--white);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;font:inherit;color:inherit}
+.idk-step:hover{border-color:var(--t);background:#f7fbfb}
+.idk-step b{display:block;color:var(--n);margin-bottom:4px}
+.idk-step span{font-size:13px;color:var(--m)}
+@media(max-width:850px){.idk-chain,.idk-steps{grid-template-columns:1fr 1fr}.idk-filters{grid-template-columns:1fr}}
+@media(max-width:560px){.idk-chain,.idk-steps{grid-template-columns:1fr}}

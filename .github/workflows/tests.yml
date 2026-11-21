@@ -28,3 +28,4 @@ jobs:
           Path("/tmp/themis-inline.js").write_text("\n".join(scripts), encoding="utf-8")
           PY
           node --check /tmp/themis-inline.js
+          for f in assets/*.js; do node --check "$f"; done

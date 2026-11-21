@@ -113,3 +113,60 @@ def test_all_buttons_and_tabs_click_without_errors(page):
             if el.is_visible():
                 el.click(timeout=3000)
     assert page.errors == []
+
+
+def test_italy_client_desk_workflow(page):
+    page.goto(f"{BASE_URL}#italy")
+    page.wait_for_timeout(500)
+    assert page.locator("#idkRows tr[data-pid]").count() >= 15
+    page.select_option("#idkFilter", "Insurers")
+    assert page.locator("#idkRows tr[data-pid]").count() == 2
+    page.select_option("#idkFilter", "All")
+    page.click("button[data-idk=idkBrief]")
+    page.select_option("#idkLang", "it")
+    assert "Nota per l'incontro" in page.inner_text("#idkBriefOut")
+    page.click("button[data-idk=idkIntegrity]")
+    page.select_option("select[data-check=eu]", "Flag")
+    assert "flag" in page.inner_text("#idkIntegSummary").lower()
+    assert page.errors == []
+
+
+def test_client_led_origination_and_organiser(page):
+    page.goto(f"{BASE_URL}#origin")
+    page.wait_for_timeout(500)
+    page.select_option("#coRegion", "Latin America")
+    out = page.inner_text("#coOut")
+    assert "Possible World Bank Group route" in out and "Enel" in out
+    page.goto(f"{BASE_URL}#crm")
+    page.wait_for_timeout(300)
+    page.click("#orgBuild")
+    assert "Invitee shortlist" in page.inner_text("#orgOut")
+    assert page.errors == []
+
+
+def test_every_fact_on_italy_desk_has_a_source(page):
+    page.goto(BASE_URL)
+    page.wait_for_timeout(500)
+    missing = page.evaluate(
+        "(() => { const I = window.THEMIS_ITALY; const bad = [];"
+        " I.prospects.forEach(p => p.facts.forEach(f => { if (!I.sources[f[1]] || !I.sources[f[1]].u) bad.push(p.id) }));"
+        " return bad })()"
+    )
+    assert missing == []
+
+
+def test_finance_base_case_is_coherent(page):
+    page.goto(f"{BASE_URL}#finance")
+    page.wait_for_timeout(500)
+    kpis = page.evaluate("[...document.querySelectorAll('#financeKpis .kpi strong')].map(e => parseFloat(e.innerText))")
+    npv, irr, min_dscr = kpis[0], kpis[1], kpis[2]
+    assert npv > 0 and irr > 0 and min_dscr >= 1.3
+
+
+@pytest.mark.parametrize("pid", ["home", "italy", "country", "finance", "crm"])
+def test_no_horizontal_overflow_on_mobile(browser, pid):
+    pg = browser.new_page(viewport={"width": 390, "height": 844})
+    pg.goto(f"{BASE_URL}#{pid}")
+    pg.wait_for_timeout(400)
+    assert pg.evaluate("document.documentElement.scrollWidth") <= 392
+    pg.close()
