@@ -1,0 +1,41 @@
+name: Validate THEMIS JavaScript
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Extract and syntax-check inline JavaScript
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__(); self.in_script=False; self.parts=[]; self.current=[]
+              def handle_starttag(self, tag, attrs):
+                  if tag == "script": self.in_script=True; self.current=[]
+              def handle_endtag(self, tag):
+                  if tag == "script" and self.in_script:
+                      self.parts.append("".join(self.current)); self.in_script=False
+              def handle_data(self, data):
+                  if self.in_script: self.current.append(data)
+          p=Scripts(); p.feed(Path("index.html").read_text(encoding="utf-8"))
+          for i, script in enumerate(p.parts):
+              Path(f"/tmp/themis-inline-{i}.js").write_text(script, encoding="utf-8")
+          print(f"Extracted {len(p.parts)} inline scripts")
+          PY
+          for file in /tmp/themis-inline-*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done
