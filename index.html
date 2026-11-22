@@ -394,29 +394,27 @@ var detail=npv<=0?'Project NPV is not positive at the modelled WACC.':(!dscrPass
 el('financeOutput').innerHTML='<div class="card"><div class="section" style="margin:0 0 8px"><div><h3>Financing structure & viability screen</h3><p>All values in the selected currency unit (millions).</p></div><span class="tag '+screenClass+'">'+screenText+'</span></div><div class="calc-output"><div class="card"><span>IFC loan</span><strong>'+fmt(ifc)+'</strong></div><div class="card"><span>Other senior debt</span><strong>'+fmt(other)+'</strong></div><div class="card"><span>Sponsor equity</span><strong>'+fmt(equity)+'</strong></div><div class="card"><span>WACC</span><strong>'+fmt(wacc*100)+'%</strong></div><div class="card"><span>IFC annual debt service</span><strong>'+fmt(ifcPay)+'</strong></div><div class="card"><span>Other annual debt service</span><strong>'+fmt(otherPay)+'</strong></div><div class="card"><span>Minimum DSCR</span><strong>'+dscrText+'</strong></div><div class="card"><span>LLCR</span><strong>'+llcrText+'</strong></div><div class="card"><span>Project NPV @ WACC</span><strong>'+fmt(npv)+'</strong></div><div class="card"><span>Year 1 CFADS</span><strong>'+fmt(rows[0].cfads)+'</strong></div><div class="card"><span>Debt funding</span><strong>'+fmt(totalDebt)+'</strong></div><div class="card"><span>Total project CAPEX</span><strong>'+fmt(cost)+'</strong></div></div><div class="result"><b>'+screenText+':</b> '+detail+'<br><span class="mini">This is a mechanical first-pass screen only. It does not establish full bankability, equity returns, affordability, E&S acceptability or IFC eligibility.</span></div><div class="pipeline-table" style="margin-top:12px"><table><thead><tr><th>Year</th><th>Revenue</th><th>OPEX</th><th>Maintenance</th><th>CFADS</th><th>IFC debt service</th><th>Other debt service</th><th>DSCR</th><th>Equity cash flow</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td>'+r.year+'</td><td>'+fmt(r.revenue)+'</td><td>'+fmt(r.opex)+'</td><td>'+fmt(r.maint)+'</td><td>'+fmt(r.cfads)+'</td><td>'+fmt(r.ifcDS)+'</td><td>'+fmt(r.otherDS)+'</td><td>'+(r.dscr===null?'n.a.':fmt(r.dscr)+'x')+'</td><td>'+fmt(r.equityCF)+'</td></tr>'}).join('')+'</tbody></table></div></div>';
 }
 function drawCashFlowChart(model){
-var rows=model.rows,W=Math.max(900,(rows.length+1)*72+100),H=390,L=72,R=24,T=26,B=66,series=[
- {name:'Initial CAPEX',color:'#a9b5c2',value:function(){return -model.cost}},
- {name:'IFC loan',color:'#147d78',value:function(){return model.ifc}},
- {name:'Other debt',color:'#5686b3',value:function(){return model.other}},
- {name:'Sponsor equity',color:'#c69a50',value:function(){return model.equity}},
- {name:'Revenue',color:'#147d78',value:function(r){return r.revenue}},
- {name:'OPEX',color:'#d18a53',value:function(r){return -r.opex}},
- {name:'Maintenance CAPEX',color:'#a9b5c2',value:function(r){return -r.maint}},
- {name:'IFC debt service',color:'#246b61',value:function(r){return -r.ifcDS}},
- {name:'Other debt service',color:'#5686b3',value:function(r){return -r.otherDS}}
-];
-var values=[-model.cost,model.ifc,model.other,model.equity];rows.forEach(function(r){values.push(r.revenue,-r.opex,-r.maint,-r.ifcDS,-r.otherDS)});
-var max=Math.max(0,Math.max.apply(null,values)),min=Math.min(0,Math.min.apply(null,values));if(max===min){max=1;min=-1}var pad=(max-min)*.12;max+=pad;min-=pad;
-var y=function(v){return T+(max-v)*(H-T-B)/(max-min)},zero=y(0),plotH=H-T-B,groupW=(W-L-R)/(rows.length+1),barW=Math.min(13,groupW/(series.length+1)),grid='';
-for(var k=0;k<=5;k++){var v=min+(max-min)*k/5,yy=y(v);grid+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#e7edf2"/><text x="'+(L-9)+'" y="'+(yy+4)+'" text-anchor="end" fill="#718397" font-size="10">'+v.toFixed(0)+'</text>'}
-var bars='',labels='';
-for(var g=0;g<=rows.length;g++){
- var x0=L+g*groupW,vals=g===0?[-model.cost,model.ifc,model.other,model.equity]:[rows[g-1].revenue,-rows[g-1].opex,-rows[g-1].maint,-rows[g-1].ifcDS,-rows[g-1].otherDS],names=g===0?series.slice(0,4):series.slice(4),total=vals.length,offset=x0+(groupW-total*barW)/2;
- vals.forEach(function(v,j){var yy=y(v),height=Math.abs(zero-yy),xx=offset+j*barW;bars+='<rect x="'+xx.toFixed(1)+'" y="'+Math.min(yy,zero).toFixed(1)+'" width="'+Math.max(4,barW-2).toFixed(1)+'" height="'+Math.max(1,height).toFixed(1)+'" rx="2" fill="'+names[j].color+'"><title>Year '+g+' · '+names[j].name+': '+v.toFixed(2)+'</title></rect>'});
- labels+='<text x="'+(x0+groupW/2).toFixed(1)+'" y="'+(H-38)+'" text-anchor="middle" fill="#52667b" font-size="11">'+(g===0?'Year 0': 'Year '+g)+'</text>';
+var rows=model.rows||[],data=[{year:'Year 0',revenue:0,cost:model.cost,detail:'Initial project CAPEX'}].concat(rows.map(function(r){return {
+ year:'Year '+r.year,revenue:r.revenue,cost:r.opex+r.maint+r.ifcDS+r.otherDS,
+ detail:'OPEX '+r.opex.toFixed(2)+' · maintenance '+r.maint.toFixed(2)+' · IFC debt service '+r.ifcDS.toFixed(2)+' · other debt service '+r.otherDS.toFixed(2)
+}}));
+var W=Math.max(900,(data.length+1)*54+100),H=390,L=76,R=24,T=28,B=62,plotW=W-L-R,plotH=H-T-B;
+var max=Math.max(1,...data.map(function(d){return d.revenue})),min=Math.min(-1,...data.map(function(d){return -d.cost}));
+var pad=(max-min)*.12;max+=pad;min-=pad;
+var y=function(v){return T+(max-v)*plotH/(max-min)},zero=y(0),groupW=plotW/data.length,barW=Math.min(26,groupW*.46),grid='';
+for(var k=0;k<=5;k++){
+ var val=min+(max-min)*k/5,yy=y(val);
+ grid+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#e7edf2"/><text x="'+(L-9)+'" y="'+(yy+4)+'" text-anchor="end" fill="#718397" font-size="10">'+val.toFixed(0)+'</text>';
 }
-var legend=series.map(function(s){return '<span><i style="background:'+s.color+'"></i>'+s.name+'</span>'}).join('');
-document.getElementById('cashFlowChart').innerHTML='<div class="cashflow-legend">'+legend+'</div><div style="overflow-x:auto"><svg class="cashflow-svg" style="min-width:'+Math.min(W,1800)+'px" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Annual bars for construction CAPEX and funding sources, followed by operating revenues and cost and debt service outflows"><text x="8" y="14" fill="#718397" font-size="10">Millions</text>'+grid+'<line x1="'+L+'" y1="'+zero+'" x2="'+(W-R)+'" y2="'+zero+'" stroke="#7e8e9e" stroke-width="1.4"/>'+bars+labels+'<text x="'+(W-R)+'" y="'+(H-9)+'" text-anchor="end" fill="#718397" font-size="10">Financial year</text></svg></div>';
+var bars='',labels='';
+data.forEach(function(d,i){
+ var cx=L+i*groupW+groupW/2,revY=y(d.revenue),costY=y(-d.cost);
+ if(d.revenue>0)bars+='<rect x="'+(cx-barW/2).toFixed(1)+'" y="'+revY.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(1,zero-revY).toFixed(1)+'" rx="2" fill="#147d78"><title>'+d.year+' · Revenue: '+d.revenue.toFixed(2)+' million</title></rect>';
+ if(d.cost>0)bars+='<rect x="'+(cx-barW/2).toFixed(1)+'" y="'+zero.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(1,costY-zero).toFixed(1)+'" rx="2" fill="'+(i===0?'#a9b5c2':'#d18a53')+'"><title>'+d.year+' · Costs: '+d.cost.toFixed(2)+' million · '+d.detail+'</title></rect>';
+ labels+='<text x="'+cx.toFixed(1)+'" y="'+(H-34)+'" text-anchor="middle" fill="#52667b" font-size="10">'+d.year+'</text>';
+});
+var legend='<span><i style="background:#147d78"></i>Revenue</span><span><i style="background:#d18a53"></i>Operating costs + maintenance + debt service</span><span><i style="background:#a9b5c2"></i>Initial CAPEX</span>';
+document.getElementById('cashFlowChart').innerHTML='<div class="cashflow-legend">'+legend+'</div><div style="overflow-x:auto"><svg class="cashflow-svg" style="min-width:'+Math.min(W,1800)+'px" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diverging annual columns: revenue above zero and costs below zero; initial CAPEX is negative in Year 0"><text x="8" y="14" fill="#718397" font-size="10">Millions</text>'+grid+'<line x1="'+L+'" y1="'+zero+'" x2="'+(W-R)+'" y2="'+zero+'" stroke="#7e8e9e" stroke-width="1.5"/>'+bars+labels+'<text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" fill="#718397" font-size="10">Financial year</text></svg></div><div class="cf-note">Each year uses one shared zero baseline: revenue is shown upwards and costs downwards. Year 0 shows the initial CAPEX as a negative outflow; operating-year costs combine OPEX, maintenance and scheduled debt service. Funding sources remain in the financing mix above.</div>';
 }
 function resetFinance(){var vals={fcost:500,frevenue:125,frevgrowth:3,fopex:35,fopexgrowth:2.5,fmaint:7,ftenor:20,ftax:25,fcovenant:1.3,fifcshare:30,fifcrate:7,fifctenor:15,fothershare:35,fotherrate:9,fothertenor:12,fke:14};Object.keys(vals).forEach(function(k){document.getElementById(k).value=vals[k]});runFinance()}
 document.querySelectorAll('#finance input').forEach(function(input){input.addEventListener('input',runFinance)});
