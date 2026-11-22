@@ -44,7 +44,7 @@
   // ---------------------------------------------------------------- Overview: questions
   var QUESTIONS = [
     { q: 'Who should I talk to in Italy, and why?', path: [['clients', 'cl', 'clItaly', 'Clients & Investors']], out: 'Prioritised prospects with sourced facts, IFC relationship and a transparent score.', status: 'Working' },
-    { q: 'An Italian client wants to invest in country X: what can the World Bank Group offer?', path: [['opportunities', 'op', 'opClient', 'Opportunities'], ['country', null, null, 'Country Intelligence']], out: 'Possible WBG route, Italian precedents and information gaps.', status: 'Working' },
+    { q: 'An Italian client wants to invest in country X: what can the World Bank Group offer?', path: [['opportunities', 'op', 'opClient', 'Opportunities'], ['country', null, null, 'Country Intelligence']], out: 'Country-specific WBG route, relevant instruments, Italian precedents and information gaps.', status: 'Working · country and sector are analyst inputs' },
     { q: 'A project proposal has landed on my desk: is it worth pursuing?', path: [['finance', null, null, 'First-look screen'], ['country', null, null, 'Country Intelligence'], ['finance', null, null, 'Bankability test']], out: 'Screening note (proceed, request information or refer) and a bankability test.', status: 'Working · model uses synthetic defaults' },
     { q: 'How does country X look to an investor?', path: [['country', null, null, 'Country Intelligence']], out: 'Brazil: verified country note. Any other country: live World Bank indicators.', status: 'Working' },
     { q: 'Which projects could become IFC deals?', path: [['opportunities', 'op', 'opPipeline', 'Public pipeline'], ['opportunities', 'op', 'opDevelop', 'Develop a project']], out: 'Source-backed pipeline and the steps an immature project needs to become bankable.', status: 'Partly · pipeline sample covers Brazil' },
@@ -212,8 +212,12 @@
       ['Environmentally and socially sound', es.length ? 'Sensitivities flagged: ' + es.join(', ') : (docs[2] ? 'E&S assessment received; no sensitivity flagged' : 'No E&S assessment yet'), es.length ? 'flag' : (docs[2] ? 'live' : 'review')]
     ];
     var esNote = es.length ? '<p><b>Environmental and social:</b> IFC categorises projects by the magnitude of risks and impacts; significant adverse, diverse, irreversible or unprecedented impacts correspond to Category A, with the strictest assessment and disclosure requirements. Flagged standards: ' + es.join(', ') + '. ' + s('escat') + ' ' + s('ps') + '</p>' : '';
+    var recommendation = integ === 'flag' ? 'Stop and escalate integrity review' : own === 'public' ? 'Refer to World Bank / PPP advisory route' : (stg === 'idea' || stg === 'concept') ? 'Develop the project before investment screening' : (missing.length > 2 || sp === 'no') ? 'Request the missing documents and sponsor evidence' : 'Proceed to Industry team discussion and full bankability assessment';
+    var strategicFit = 'To be confirmed with the relevant IFC Industry and country teams: sector and country priorities, project scale, sponsor quality and expected development impact.';
+    var additionality = 'To be demonstrated: explain why IFC financing, mobilisation, expertise or standards add value beyond available commercial financing.';
     $('flOut').innerHTML = '<h3>' + esc($('flName').value || 'Proposal') + ' · ' + esc(cname) + '</h3>' +
-      '<p><span class="idk-score t' + cls + '">' + esc(verdict) + '</span></p><p>' + why.map(esc).join(' ') + '</p>' +
+      '<p><span class="idk-score t' + cls + '">' + esc(verdict) + '</span></p><p><b>Recommended next step:</b> ' + esc(recommendation) + '</p><p>' + why.map(esc).join(' ') + '</p>' +
+      '<p><b>Strategic fit:</b> ' + strategicFit + '</p><p><b>IFC additionality:</b> ' + additionality + '</p>' +
       '<table><tr><th>IFC eligibility criterion</th><th>Status from the information provided</th></tr>' + crit.map(function (r) { return '<tr><td>' + esc(r[0]) + '</td><td><span class="tag ' + (r[2] === 'flag' ? 'review' : r[2]) + '">' + esc(r[1]) + '</span></td></tr>'; }).join('') + '</table>' +
       '<p class="mini">Criteria as published by IFC. ' + s('apply') + ' ' + s('applyWE') + '</p>' + esNote +
       (missing.length ? '<p><b>Information to request:</b> ' + missing.map(esc).join('; ') + '.</p>' : '') +
