@@ -41,7 +41,7 @@ This branch expands the initial static prototype into a practical, interactive d
 - **Evidence room:** official source register, claim taxonomy and concession diligence checklist.
 - **Country intelligence:** entry points to the Development Finance Observatory, World Bank Indicators API and OpenBB.
 - **EcoNoroeste:** retained as a retrospective reference case, never presented as a live opportunity.
-- **AI architecture:** documented open-source components and staged production architecture.
+- **AI Agents & Workflows:** six proposed business-facing agents — Country Intelligence, Opportunity Sourcing, Investor Intelligence, Project Screening, Research & Due Diligence, and Business Development. Their capabilities are described conditionally; they are not live autonomous agents in the static demo.
 
 ## What is real and what is not
 
@@ -49,7 +49,7 @@ This branch expands the initial static prototype into a practical, interactive d
 - Disclosed investment values are reproduced with their source basis; they are not financing requirements or independent estimates.
 - Investor profiles and investor appetite are not yet populated with verified institution-level evidence.
 - The finance lab's prefilled values are synthetic user-editable assumptions, not EcoNoroeste or any other project's financial data.
-- The public Pages demo is static. It does not yet connect to a live LLM, persistent CRM, DFO/OpenBB APIs, document-ingestion service or production database.
+- The public Pages demo is static. It does not yet connect to live LLM agents, persistent CRM, DFO/OpenBB APIs, document-ingestion service or production database. The six-agent operating model is a proposed design, not an implemented autonomous system.
 - Outputs are not investment advice, credit decisions, IFC recommendations or official World Bank Group products.
 
 ## Open-source capability references
