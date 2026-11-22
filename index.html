@@ -355,18 +355,31 @@ function addRisk(){var x={dim:document.getElementById('riskDim').value,status:do
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function renderCashflowChart(rows){
 var el=document.getElementById('cashflowChart');if(!el)return;
-var series=[{name:'Revenue',key:'revenue',color:'#147d78'},{name:'CFADS',key:'cfads',color:'#2f8fca'},{name:'Senior debt service',key:'totalDS',color:'#c69a50'},{name:'Equity cash flow',key:'equityCF',color:'#7c6bb1'}];
-var data=rows.map(function(r){return {label:r.year.replace('Op ','Y'),revenue:r.revenue,cfads:r.cfads,totalDS:r.totalDS,equityCF:r.equityCF}});
-var w=1000,hg=330,left=62,right=18,top=20,bottom=48,plotW=w-left-right,plotH=hg-top-bottom;
-var max=Math.max(1,...data.map(function(d){return Math.max(d.revenue,d.cfads,d.totalDS,d.equityCF)})),min=Math.min(0,...data.map(function(d){return Math.min(d.revenue,d.cfads,d.totalDS,d.equityCF)}));var pad=(max-min)*.12;max+=pad;min-=pad;
-function x(i){return left+(data.length<=1?plotW/2:i*plotW/(data.length-1))}function y(v){return top+(max-v)/(max-min)*plotH}
-var grid='',ticks=5;for(var i=0;i<=ticks;i++){var val=min+(max-min)*i/ticks,yy=y(val);grid+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e4eaf0"/><text x="'+(left-9)+'" y="'+(yy+4)+'" text-anchor="end" fill="#738398" font-size="10">'+faFmt(val,0)+'</text>'}grid+='<line x1="'+left+'" y1="'+y(0)+'" x2="'+(w-right)+'" y2="'+y(0)+'" stroke="#9aa9b8" stroke-width="1.4"/>';
-var lines=series.map(function(s){var pts=data.map(function(d,i){return x(i)+','+y(d[s.key])}).join(' ');var circles=data.map(function(d,i){return '<circle cx="'+x(i)+'" cy="'+y(d[s.key])+'" r="3" fill="'+s.color+'"><title>'+s.name+' · '+d.label+': '+faFmt(d[s.key])+' USD m</title></circle>'}).join('');return '<polyline points="'+pts+'" fill="none" stroke="'+s.color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>'+circles}).join('');
-var labels=data.map(function(d,i){if(data.length>16&&i%2!==0&&i!==data.length-1)return '';return '<text x="'+x(i)+'" y="'+(hg-17)+'" text-anchor="middle" fill="#738398" font-size="9">'+d.label+'</text>'}).join('');
-var legend=series.map(function(s){return '<span class="cf-key"><i class="cf-dot" style="background:'+s.color+'"></i>'+s.name+'</span>'}).join('');
-el.innerHTML='<div class="cf-legend">'+legend+'</div><div class="cf-chart"><svg viewBox="0 0 '+w+' '+hg+'" role="img" aria-label="Annual revenue, CFADS, senior debt service and equity cash flow"><text x="'+left+'" y="12" fill="#738398" font-size="10">USD millions</text>'+grid+lines+labels+'</svg></div><div class="cf-note">Hover over a plotted point to inspect the annual value. Construction years are excluded from this operating cash-flow chart; construction sources and uses are shown separately.</div>';
+var data=[{label:'CAPEX',revenue:0,cost:500,isCapex:true}].concat(rows.map(function(r){return {
+ label:r.year.replace('Op ','Y'),revenue:r.revenue,cost:r.opex+r.maint,isCapex:false,
+ detail:'OPEX '+faFmt(r.opex)+' · maintenance '+faFmt(r.maint)
+}}));
+// Use the actual project CAPEX input for Year 0.
+var capexInput=document.getElementById('fcost');
+if(capexInput)data[0].cost=Number(capexInput.value)||0;
+var w=Math.max(1000,data.length*54+120),hg=360,left=66,right=22,top=24,bottom=48,plotW=w-left-right,plotH=hg-top-bottom;
+var max=Math.max(1,...data.map(function(d){return d.revenue})),min=Math.min(-1,...data.map(function(d){return -d.cost}));
+var pad=(max-min)*.1;max+=pad;min-=pad;
+function x(i){return left+(i+.5)*plotW/data.length}
+function y(v){return top+(max-v)*plotH/(max-min)}
+var zero=y(0),grid='';
+for(var i=0;i<=5;i++){var val=min+(max-min)*i/5,yy=y(val);grid+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e4eaf0"/><text x="'+(left-9)+'" y="'+(yy+4)+'" text-anchor="end" fill="#738398" font-size="10">'+faFmt(val,0)+'</text>'}
+grid+='<line x1="'+left+'" y1="'+zero+'" x2="'+(w-right)+'" y2="'+zero+'" stroke="#8999aa" stroke-width="1.5"/>';
+var bars='',labels='',barW=Math.min(25,plotW/data.length*.42);
+data.forEach(function(d,i){
+ var cx=x(i),ry=y(d.revenue),cy=y(-d.cost);
+ if(d.revenue>0)bars+='<rect x="'+(cx-barW/2)+'" y="'+ry+'" width="'+barW+'" height="'+Math.max(1,zero-ry)+'" rx="2" fill="#147d78"><title>'+d.label+' · Revenue: '+faFmt(d.revenue)+' USD m</title></rect>';
+ if(d.cost>0)bars+='<rect x="'+(cx-barW/2)+'" y="'+zero+'" width="'+barW+'" height="'+Math.max(1,cy-zero)+'" rx="2" fill="'+(d.isCapex?'#a9b5c2':'#d18a53')+'"><title>'+d.label+' · '+(d.isCapex?'Initial CAPEX':'OPEX + maintenance')+': −'+faFmt(d.cost)+' USD m'+(d.detail?' · '+d.detail:'')+'</title></rect>';
+ if(data.length<=16||i%2===0||i===data.length-1)labels+='<text x="'+cx+'" y="'+(hg-16)+'" text-anchor="middle" fill="#738398" font-size="9">'+d.label+'</text>';
+});
+var legend='<span class="cf-key"><i class="cf-dot" style="background:#147d78"></i>Revenue (positive)</span><span class="cf-key"><i class="cf-dot" style="background:#d18a53"></i>OPEX + maintenance (negative)</span><span class="cf-key"><i class="cf-dot" style="background:#a9b5c2"></i>Initial CAPEX (Year 0)</span>';
+el.innerHTML='<div class="cf-legend">'+legend+'</div><div class="cf-chart" style="overflow-x:auto"><svg style="min-width:'+Math.min(w,1800)+'px" viewBox="0 0 '+w+' '+hg+'" role="img" aria-label="Annual diverging bar chart: revenues above zero and project costs below zero, with initial CAPEX in Year 0"><text x="'+left+'" y="13" fill="#738398" font-size="10">USD millions</text>'+grid+bars+labels+'</svg></div><div class="cf-note">Each period has one shared horizontal position and zero baseline: revenues extend upwards, costs downwards. Year 0 records the initial CAPEX outflow. Operating costs comprise OPEX and maintenance; debt service is a financing cash flow and remains in the annual debt schedule below.</div>';
 }
-
 function runFinance(){
 var el=function(id){return document.getElementById(id)},v=function(id){return Number(el(id).value)},cost=v('fcost'),revenue=v('frevenue'),opex=v('fopex'),maint=v('fmaint'),years=Math.floor(v('ftenor')),tax=v('ftax')/100,cov=v('fcovenant'),gRev=v('frevgrowth')/100,gOp=v('fopexgrowth')/100,ifcShare=v('fifcshare')/100,ifcRate=v('fifcrate')/100,ifcYears=Math.floor(v('fifctenor')),otherShare=v('fothershare')/100,otherRate=v('fotherrate')/100,otherYears=Math.floor(v('fothertenor')),ke=v('fke')/100;
 var valid=cost>0&&revenue>=0&&opex>=0&&maint>=0&&years>0&&years<=40&&tax>=0&&tax<=1&&cov>0&&gRev>-1&&gOp>-1&&ifcShare>=0&&otherShare>=0&&ifcShare+otherShare<=1&&ifcRate>=0&&otherRate>=0&&ifcYears>0&&otherYears>0&&ifcYears<=years&&otherYears<=years&&ke>=0;
