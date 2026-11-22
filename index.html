@@ -355,83 +355,29 @@ function addRisk(){var x={dim:document.getElementById('riskDim').value,status:do
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function renderCashflowChart(rows){
 var el=document.getElementById('cashflowChart');if(!el)return;
-var data=[{label:'CAPEX',revenue:0,cost:500,isCapex:true}].concat(rows.map(function(r){return {
- label:r.year.replace('Op ','Y'),revenue:r.revenue,cost:r.opex+r.maint,isCapex:false,
- detail:'OPEX '+faFmt(r.opex)+' · maintenance '+faFmt(r.maint)
+var capexEl=document.getElementById('fcost'),capex=capexEl?Math.max(0,Number(capexEl.value)||0):0;
+var data=[{label:'Year 0',revenue:0,cost:capex,isCapex:true,detail:'Initial project CAPEX'}].concat(rows.map(function(r){return {
+ label:r.year.replace(/^Op\\s*/, 'Year '),revenue:r.revenue,cost:r.opex+r.maintenance,isCapex:false,
+ detail:'OPEX '+faFmt(r.opex)+' · maintenance '+faFmt(r.maintenance)
 }}));
-// Use the actual project CAPEX input for Year 0.
-var capexInput=document.getElementById('fcost');
-if(capexInput)data[0].cost=Number(capexInput.value)||0;
-var w=Math.max(1000,data.length*54+120),hg=360,left=66,right=22,top=24,bottom=48,plotW=w-left-right,plotH=hg-top-bottom;
+var w=Math.max(1000,data.length*58+120),hg=380,left=72,right=24,top=26,bottom=52,plotW=w-left-right,plotH=hg-top-bottom;
 var max=Math.max(1,...data.map(function(d){return d.revenue})),min=Math.min(-1,...data.map(function(d){return -d.cost}));
-var pad=(max-min)*.1;max+=pad;min-=pad;
+var pad=Math.max(5,(max-min)*.1);max+=pad;min-=pad;
 function x(i){return left+(i+.5)*plotW/data.length}
 function y(v){return top+(max-v)*plotH/(max-min)}
 var zero=y(0),grid='';
-for(var i=0;i<=5;i++){var val=min+(max-min)*i/5,yy=y(val);grid+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e4eaf0"/><text x="'+(left-9)+'" y="'+(yy+4)+'" text-anchor="end" fill="#738398" font-size="10">'+faFmt(val,0)+'</text>'}
-grid+='<line x1="'+left+'" y1="'+zero+'" x2="'+(w-right)+'" y2="'+zero+'" stroke="#8999aa" stroke-width="1.5"/>';
-var bars='',labels='',barW=Math.min(25,plotW/data.length*.42);
+for(var i=0;i<=5;i++){var val=min+(max-min)*i/5,yy=y(val);grid+='<line x1="'+left+'" y1="'+yy+'" x2="'+(w-right)+'" y2="'+yy+'" stroke="#e4eaf0"/><text x="'+(left-10)+'" y="'+(yy+4)+'" text-anchor="end" fill="#738398" font-size="10">'+faFmt(val,0)+'</text>'}
+grid+='<line x1="'+left+'" y1="'+zero+'" x2="'+(w-right)+'" y2="'+zero+'" stroke="#64788d" stroke-width="1.8"/>';
+var bars='',labels='',barW=Math.max(12,Math.min(30,plotW/data.length*.42));
 data.forEach(function(d,i){
  var cx=x(i),ry=y(d.revenue),cy=y(-d.cost);
- if(d.revenue>0)bars+='<rect x="'+(cx-barW/2)+'" y="'+ry+'" width="'+barW+'" height="'+Math.max(1,zero-ry)+'" rx="2" fill="#147d78"><title>'+d.label+' · Revenue: '+faFmt(d.revenue)+' USD m</title></rect>';
- if(d.cost>0)bars+='<rect x="'+(cx-barW/2)+'" y="'+zero+'" width="'+barW+'" height="'+Math.max(1,cy-zero)+'" rx="2" fill="'+(d.isCapex?'#a9b5c2':'#d18a53')+'"><title>'+d.label+' · '+(d.isCapex?'Initial CAPEX':'OPEX + maintenance')+': −'+faFmt(d.cost)+' USD m'+(d.detail?' · '+d.detail:'')+'</title></rect>';
- if(data.length<=16||i%2===0||i===data.length-1)labels+='<text x="'+cx+'" y="'+(hg-16)+'" text-anchor="middle" fill="#738398" font-size="9">'+d.label+'</text>';
+ if(d.revenue>0)bars+='<rect x="'+(cx-barW/2).toFixed(1)+'" y="'+ry.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(2,zero-ry).toFixed(1)+'" rx="2" fill="#147d78"><title>'+d.label+' · Revenue: '+faFmt(d.revenue)+' USD m</title></rect>';
+ if(d.cost>0)bars+='<rect x="'+(cx-barW/2).toFixed(1)+'" y="'+zero.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(2,cy-zero).toFixed(1)+'" rx="2" fill="'+(d.isCapex?'#a9b5c2':'#d18a53')+'"><title>'+d.label+' · '+(d.isCapex?'Initial CAPEX':'OPEX + major maintenance')+': −'+faFmt(d.cost)+' USD m'+(d.detail?' · '+d.detail:'')+'</title></rect>';
+ if(data.length<=16||i%2===0||i===data.length-1)labels+='<text x="'+cx.toFixed(1)+'" y="'+(hg-17)+'" text-anchor="middle" fill="#52667b" font-size="10">'+d.label+'</text>';
 });
 var legend='<span class="cf-key"><i class="cf-dot" style="background:#147d78"></i>Revenue (positive)</span><span class="cf-key"><i class="cf-dot" style="background:#d18a53"></i>OPEX + maintenance (negative)</span><span class="cf-key"><i class="cf-dot" style="background:#a9b5c2"></i>Initial CAPEX (Year 0)</span>';
-el.innerHTML='<div class="cf-legend">'+legend+'</div><div class="cf-chart" style="overflow-x:auto"><svg style="min-width:'+Math.min(w,1800)+'px" viewBox="0 0 '+w+' '+hg+'" role="img" aria-label="Annual diverging bar chart: revenues above zero and project costs below zero, with initial CAPEX in Year 0"><text x="'+left+'" y="13" fill="#738398" font-size="10">USD millions</text>'+grid+bars+labels+'</svg></div><div class="cf-note">Each period has one shared horizontal position and zero baseline: revenues extend upwards, costs downwards. Year 0 records the initial CAPEX outflow. Operating costs comprise OPEX and maintenance; debt service is a financing cash flow and remains in the annual debt schedule below.</div>';
+el.innerHTML='<div class="cf-legend">'+legend+'</div><div class="cf-chart" style="overflow-x:auto"><svg style="display:block;min-width:'+Math.min(w,1800)+'px;width:100%" viewBox="0 0 '+w+' '+hg+'" role="img" aria-label="Annual diverging bar chart: Year 0 initial CAPEX below zero; revenues above zero and operating costs below zero in each operating year"><text x="'+left+'" y="14" fill="#738398" font-size="10">USD millions</text>'+grid+bars+labels+'</svg></div><div class="cf-note">Year 0 shows the full initial CAPEX as a negative outflow. From Year 1 onwards, each year has two aligned bars on the same zero baseline: revenues upwards and OPEX plus scheduled major maintenance downwards. Debt service is shown in the annual financing schedule, not as an operating cost.</div>';
 }
-function runFinance(){
-var el=function(id){return document.getElementById(id)},v=function(id){return Number(el(id).value)},cost=v('fcost'),revenue=v('frevenue'),opex=v('fopex'),maint=v('fmaint'),years=Math.floor(v('ftenor')),tax=v('ftax')/100,cov=v('fcovenant'),gRev=v('frevgrowth')/100,gOp=v('fopexgrowth')/100,ifcShare=v('fifcshare')/100,ifcRate=v('fifcrate')/100,ifcYears=Math.floor(v('fifctenor')),otherShare=v('fothershare')/100,otherRate=v('fotherrate')/100,otherYears=Math.floor(v('fothertenor')),ke=v('fke')/100;
-var valid=cost>0&&revenue>=0&&opex>=0&&maint>=0&&years>0&&years<=40&&tax>=0&&tax<=1&&cov>0&&gRev>-1&&gOp>-1&&ifcShare>=0&&otherShare>=0&&ifcShare+otherShare<=1&&ifcRate>=0&&otherRate>=0&&ifcYears>0&&otherYears>0&&ifcYears<=years&&otherYears<=years&&ke>=0;
-if(!valid){el('financeOutput').innerHTML='<div class="result">Invalid assumptions. Check that funding shares do not exceed 100%, growth rates are above -100%, and loan tenors do not exceed the operating period.</div>';el('fundingPreview').innerHTML='<span class="tag warn">Funding assumptions need correction</span>';return}
-var ifc=cost*ifcShare,other=cost*otherShare,equity=cost-ifc-other,totalDebt=ifc+other;
-var annuity=function(p,r,n){return p===0?0:(r===0?p/n:p*r/(1-Math.pow(1+r,-n)))};
-var ifcPay=annuity(ifc,ifcRate,ifcYears),otherPay=annuity(other,otherRate,otherYears),weightedDebtRate=totalDebt===0?0:(ifc*ifcRate+other*otherRate)/totalDebt;
-var wacc=equity/cost*ke+(ifc/cost)*ifcRate*(1-tax)+(other/cost)*otherRate*(1-tax);
-var rows=[],dscrs=[],pv=0,llpv=0,minDscr=Infinity,allYears=true,firstBreach=null;
-for(var t=1;t<=years;t++){
- var rev=revenue*Math.pow(1+gRev,t-1),op=opex*Math.pow(1+gOp,t-1),ebitda=rev-op,cashTax=Math.max(0,ebitda*tax),cfads=ebitda-cashTax-maint;
- var ifcDS=t<=ifcYears?ifcPay:0,otherDS=t<=otherYears?otherPay:0,totalDS=ifcDS+otherDS,dscr=totalDS>0?cfads/totalDS:null,equityCF=cfads-totalDS;
- rows.push({year:t,revenue:rev,opex:op,maint:maint,ifcDS:ifcDS,otherDS:otherDS,cfads:cfads,totalDS:totalDS,dscr:dscr,equityCF:equityCF});
- pv+=cfads/Math.pow(1+wacc,t);
- if(t<=Math.max(ifcYears,otherYears))llpv+=cfads/Math.pow(1+weightedDebtRate,t);
- if(dscr!==null){dscrs.push(dscr);if(dscr<minDscr)minDscr=dscr;if(dscr<cov){allYears=false;if(firstBreach===null)firstBreach=t}}
-}
-var npv=-cost+pv,llcr=totalDebt===0?null:llpv/totalDebt,fmt=function(x,d){return Number.isFinite(x)?x.toFixed(d===undefined?2:d):'n.m.'};
-var dscrApplicable=totalDebt>0,dscrPass=!dscrApplicable||allYears,screenPass=npv>0&&dscrPass;
-el('fundingPreview').innerHTML='<b>Funding mix</b> · IFC '+fmt(ifcShare*100,1)+'% ('+fmt(ifc)+') · Other lenders '+fmt(otherShare*100,1)+'% ('+fmt(other)+') · Sponsor equity '+fmt((equity/cost)*100,1)+'% ('+fmt(equity)+')'+(ifcShare+otherShare>1?'<span class="tag warn">Overfunded</span>':'');
-drawCashFlowChart({cost:cost,ifc:ifc,other:other,equity:equity,rows:rows});
-var dscrText=dscrApplicable?fmt(minDscr)+'x':'n.a. — no senior debt',llcrText=llcr===null?'n.a.':fmt(llcr)+'x';
-var screenText=screenPass?'Preliminary screen passed':'Preliminary screen not passed',screenClass=screenPass?'live':'review';
-var detail=npv<=0?'Project NPV is not positive at the modelled WACC.':(!dscrPass?'Minimum DSCR falls below the selected covenant'+(firstBreach?' from Year '+firstBreach:'')+'.':'The modelled project NPV is positive and all debt-service years meet the selected DSCR covenant.');
-el('financeOutput').innerHTML='<div class="card"><div class="section" style="margin:0 0 8px"><div><h3>Financing structure & viability screen</h3><p>All values in the selected currency unit (millions).</p></div><span class="tag '+screenClass+'">'+screenText+'</span></div><div class="calc-output"><div class="card"><span>IFC loan</span><strong>'+fmt(ifc)+'</strong></div><div class="card"><span>Other senior debt</span><strong>'+fmt(other)+'</strong></div><div class="card"><span>Sponsor equity</span><strong>'+fmt(equity)+'</strong></div><div class="card"><span>WACC</span><strong>'+fmt(wacc*100)+'%</strong></div><div class="card"><span>IFC annual debt service</span><strong>'+fmt(ifcPay)+'</strong></div><div class="card"><span>Other annual debt service</span><strong>'+fmt(otherPay)+'</strong></div><div class="card"><span>Minimum DSCR</span><strong>'+dscrText+'</strong></div><div class="card"><span>LLCR</span><strong>'+llcrText+'</strong></div><div class="card"><span>Project NPV @ WACC</span><strong>'+fmt(npv)+'</strong></div><div class="card"><span>Year 1 CFADS</span><strong>'+fmt(rows[0].cfads)+'</strong></div><div class="card"><span>Debt funding</span><strong>'+fmt(totalDebt)+'</strong></div><div class="card"><span>Total project CAPEX</span><strong>'+fmt(cost)+'</strong></div></div><div class="result"><b>'+screenText+':</b> '+detail+'<br><span class="mini">This is a mechanical first-pass screen only. It does not establish full bankability, equity returns, affordability, E&S acceptability or IFC eligibility.</span></div><div class="pipeline-table" style="margin-top:12px"><table><thead><tr><th>Year</th><th>Revenue</th><th>OPEX</th><th>Maintenance</th><th>CFADS</th><th>IFC debt service</th><th>Other debt service</th><th>DSCR</th><th>Equity cash flow</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td>'+r.year+'</td><td>'+fmt(r.revenue)+'</td><td>'+fmt(r.opex)+'</td><td>'+fmt(r.maint)+'</td><td>'+fmt(r.cfads)+'</td><td>'+fmt(r.ifcDS)+'</td><td>'+fmt(r.otherDS)+'</td><td>'+(r.dscr===null?'n.a.':fmt(r.dscr)+'x')+'</td><td>'+fmt(r.equityCF)+'</td></tr>'}).join('')+'</tbody></table></div></div>';
-}
-function drawCashFlowChart(model){
-var rows=model.rows||[],data=[{year:'Year 0',revenue:0,cost:model.cost,detail:'Initial project CAPEX'}].concat(rows.map(function(r){return {
- year:'Year '+r.year,revenue:r.revenue,cost:r.opex+r.maint+r.ifcDS+r.otherDS,
- detail:'OPEX '+r.opex.toFixed(2)+' · maintenance '+r.maint.toFixed(2)+' · IFC debt service '+r.ifcDS.toFixed(2)+' · other debt service '+r.otherDS.toFixed(2)
-}}));
-var W=Math.max(900,(data.length+1)*54+100),H=390,L=76,R=24,T=28,B=62,plotW=W-L-R,plotH=H-T-B;
-var max=Math.max(1,...data.map(function(d){return d.revenue})),min=Math.min(-1,...data.map(function(d){return -d.cost}));
-var pad=(max-min)*.12;max+=pad;min-=pad;
-var y=function(v){return T+(max-v)*plotH/(max-min)},zero=y(0),groupW=plotW/data.length,barW=Math.min(26,groupW*.46),grid='';
-for(var k=0;k<=5;k++){
- var val=min+(max-min)*k/5,yy=y(val);
- grid+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#e7edf2"/><text x="'+(L-9)+'" y="'+(yy+4)+'" text-anchor="end" fill="#718397" font-size="10">'+val.toFixed(0)+'</text>';
-}
-var bars='',labels='';
-data.forEach(function(d,i){
- var cx=L+i*groupW+groupW/2,revY=y(d.revenue),costY=y(-d.cost);
- if(d.revenue>0)bars+='<rect x="'+(cx-barW/2).toFixed(1)+'" y="'+revY.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(1,zero-revY).toFixed(1)+'" rx="2" fill="#147d78"><title>'+d.year+' · Revenue: '+d.revenue.toFixed(2)+' million</title></rect>';
- if(d.cost>0)bars+='<rect x="'+(cx-barW/2).toFixed(1)+'" y="'+zero.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(1,costY-zero).toFixed(1)+'" rx="2" fill="'+(i===0?'#a9b5c2':'#d18a53')+'"><title>'+d.year+' · Costs: '+d.cost.toFixed(2)+' million · '+d.detail+'</title></rect>';
- labels+='<text x="'+cx.toFixed(1)+'" y="'+(H-34)+'" text-anchor="middle" fill="#52667b" font-size="10">'+d.year+'</text>';
-});
-var legend='<span><i style="background:#147d78"></i>Revenue</span><span><i style="background:#d18a53"></i>Operating costs + maintenance + debt service</span><span><i style="background:#a9b5c2"></i>Initial CAPEX</span>';
-document.getElementById('cashFlowChart').innerHTML='<div class="cashflow-legend">'+legend+'</div><div style="overflow-x:auto"><svg class="cashflow-svg" style="min-width:'+Math.min(W,1800)+'px" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diverging annual columns: revenue above zero and costs below zero; initial CAPEX is negative in Year 0"><text x="8" y="14" fill="#718397" font-size="10">Millions</text>'+grid+'<line x1="'+L+'" y1="'+zero+'" x2="'+(W-R)+'" y2="'+zero+'" stroke="#7e8e9e" stroke-width="1.5"/>'+bars+labels+'<text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" fill="#718397" font-size="10">Financial year</text></svg></div><div class="cf-note">Each year uses one shared zero baseline: revenue is shown upwards and costs downwards. Year 0 shows the initial CAPEX as a negative outflow; operating-year costs combine OPEX, maintenance and scheduled debt service. Funding sources remain in the financing mix above.</div>';
-}
-function resetFinance(){var vals={fcost:500,frevenue:125,frevgrowth:3,fopex:35,fopexgrowth:2.5,fmaint:7,ftenor:20,ftax:25,fcovenant:1.3,fifcshare:30,fifcrate:7,fifctenor:15,fothershare:35,fotherrate:9,fothertenor:12,fke:14};Object.keys(vals).forEach(function(k){document.getElementById(k).value=vals[k]});runFinance()}
-document.querySelectorAll('#finance input').forEach(function(input){input.addEventListener('input',runFinance)});
-runFinance();
 function countryBrief(){var sector=document.getElementById('countrySector').value,q=escapeHtml(document.getElementById('countryQuestion').value);var focus={'Transport and logistics':'Prioritise concession pipeline and procurement status, traffic / freight evidence, tariff indexation, lifecycle CAPEX, grantor fiscal capacity, land, licensing and E&S readiness.','Energy':'Assess grid capacity, offtaker creditworthiness, tariff regulation, curtailment, connection queues, storage and currency exposure.','Digital infrastructure':'Assess broadband coverage, data-centre demand, power availability, spectrum, wholesale access and competition.','Manufacturing':'Assess productivity, trade access, energy and logistics costs, skills, tax complexity and long-term corporate finance.','Agribusiness':'Assess logistics and storage gaps, land tenure, traceability, climate exposure, export access and sustainable supply chains.','Tourism':'Assess regional demand, transport access, seasonality, environmental carrying capacity and SME finance.','Water':'Assess sanitation coverage, regulator capacity, tariff affordability, municipal fiscal capacity and concession design.','Financial services':'Assess SME credit gaps, competition, prudential framework, capital-market depth, inclusion and green finance.'}[sector]||'Review market demand, regulation, financing access and project-level execution risks.';document.getElementById('countryBriefOutput').innerHTML='<b>Country Investment Outlook · Brazil × '+escapeHtml(sector)+'</b><ol><li><b>Macro / financial assessment:</b> Brazil has economic scale and substantial external buffers, but high public debt, a sizeable overall deficit and elevated financing costs constrain public investment and affect private capital costs. 2025 values above are IMF estimates; 2026 values are projections.</li><li><b>Business environment:</b> Brazil has an established PPP ecosystem and domestic financial depth. Regulatory complexity, multi-level public responsibilities, trade openness and the cost / tenor of credit remain key considerations. OECD FDIRRI / PMR must be reviewed at sector level.</li><li><b>Main constraints:</b> fiscal and subnational capacity; cost and tenor of finance; regulatory and tax complexity; infrastructure and logistics gaps; project preparation, land and environmental licensing.</li><li><b>Sector opportunity hypothesis:</b> '+focus+'</li><li><b>Potential financing needs:</b> long-tenor debt, local-currency solutions where available, brownfield / refinancing capital, mobilisation of commercial lenders and institutional investors, and project-preparation support. The funding gap must be established from project sources and uses, not inferred from national indicators.</li><li><b>Potential DFI / IFC relevance:</b> test additionality through tenor, mobilisation, risk mitigation, PPP advisory, E&S standards and market creation. This is a hypothesis, not a statement of IFC appetite or eligibility.</li><li><b>Next diligence:</b> select a state / authority and project; verify tender and concession documents; assess sponsor and grantor capacity; obtain demand, CAPEX / OPEX and FX data; review permits, land and E&S; build a project-level financing model.</li></ol><p><b>Investment question:</b> '+q+'</p><p class="mini">Structured synthesis from the dated indicators and linked institutional sources. Not a sovereign rating, credit opinion or investment recommendation.</p>'}
 
 function resetFinance(){document.getElementById('fcost').value=500;document.getElementById('fdebt').value=65;document.getElementById('frate').value=8;document.getElementById('ftenor').value=15;document.getElementById('frevenue').value=125;document.getElementById('fopex').value=35;document.getElementById('fmaint').value=7;document.getElementById('frevgrowth').value=3;document.getElementById('fopexgrowth').value=2.5;document.getElementById('fke').value=14;document.getElementById('ftax').value=25;document.getElementById('fcovenant').value=1.3;runFinance()}
@@ -488,7 +434,16 @@ document.getElementById('scenarioOutput').innerHTML='<b>'+({base:'Base case',dow
 document.getElementById('bankabilityOutput').innerHTML='<b>'+(npv>0&&minDSCR!==null&&minDSCR>=p.target?'Preliminary metrics above selected thresholds':'Further structuring / diligence required')+'</b><ul><li>NPV '+(npv>0?'positive':'not positive')+' at assumed WACC.</li><li>'+(breach?'DSCR covenant breach first occurs in '+breach.year+'.':'No modelled DSCR covenant breach in the operating period.')+'</li><li>Debt funding at opening: '+faFmt(senior)+'m; sponsor equity: '+faFmt(equityTotal)+'m.</li><li>Financing gap / additionality must be assessed against verified project costs, lender appetite and realistic alternatives.</li></ul><p class="mini">This is not a bankability decision. The model uses simplified annual level-payment debt and unverified illustrative assumptions.</p>';
 }
 function resetFinance(){var vals={fcost:500,fconstruction:3,ftenor:20,faadt:24000,ftoll:12,ftrafficgrowth:2.5,ftollgrowth:2,fopex:24,fopexgrowth:2.5,fmaint:30,fmaintcycle:5,ftax:25,fifcshare:30,fifcrate:7,fifctenor:15,fothershare:35,fotherrate:9,fothertenor:12,fwacc:9,fcovenant:1.3};Object.keys(vals).forEach(function(k){document.getElementById(k).value=vals[k]});runFinance()}
-document.querySelectorAll('#finance input').forEach(function(el){el.addEventListener('input',function(){runFinance()})});
+var financeRoot=document.getElementById('finance');
+if(financeRoot){
+ financeRoot.addEventListener('input',function(e){if(e.target&&e.target.matches('input'))runFinance()});
+ financeRoot.addEventListener('change',function(e){if(e.target&&e.target.matches('input,select'))runFinance()});
+}
+document.querySelectorAll('#fatabs .tab').forEach(function(btn){btn.addEventListener('click',function(){
+ document.querySelectorAll('#fatabs .tab').forEach(function(x){x.classList.toggle('active',x===btn)});
+ document.querySelectorAll('#finance .panel').forEach(function(panel){panel.classList.toggle('active',panel.id===btn.dataset.tab)});
+ if(btn.dataset.tab==='fa3')runFinance();
+})});
 /* Run after all workspace data (incl. iiInstitutions) is defined. */
 
 </script><!-- THEMIS Pages redeploy trigger: project-assessment-finance cashflow chart v1 --><script>
