@@ -333,6 +333,10 @@
       '<h4>' + L.hyp + '</h4><ul><li><b>' + L.route + ':</b> ' + esc(p.route) + '</li><li><b>' + L.cons + ':</b> ' + esc((it ? CONSTRAINTS_IT : CONSTRAINTS)[p.type]) + '</li></ul>' + (it ? '<p class="mini">Fatti e percorso sono riportati in inglese, come nelle fonti.</p>' : '') +
       '<h4>' + L.q + '</h4><ol>' + QUESTIONS[lang][p.type].map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol>' +
       '<h4>' + L.units + '</h4><p>' + o.units.map(esc).join(' · ') + ' <span class="mini">[' + esc(S[o.src].t) + ']</span></p>' +
+      '<h4>' + (it ? 'Precedenti IFC pertinenti' : 'Relevant IFC precedents') + '</h4>' +
+      (PRECEDENTS.filter(function (x) { return x.sponsor.toLowerCase() === p.name.toLowerCase(); }).length ?
+        '<ul>' + PRECEDENTS.filter(function (x) { return x.sponsor.toLowerCase() === p.name.toLowerCase(); }).map(function (x) { return '<li>' + esc(x.country + ' · ' + x.sector + ' · ' + x.year + ': ' + x.what) + ' <span class="mini">[' + esc(S[x.src].t) + ']</span></li>'; }).join('') + '</ul>' :
+        '<p>' + (it ? 'Nessun precedente specifico registrato nel database THEMIS; verificare eventuali operazioni e relazioni IFC prima dell’incontro.' : 'No institution-specific precedent is recorded in the THEMIS database; verify IFC transactions and relationships before the meeting.') + '</p>') +
       '<h4>' + L.integ + '</h4><p>' + esc(integTxt) + '</p>' +
       '<h4>' + L.next + '</h4><p>' + L.nextTxt + '</p><p class="mini">' + L.disc + '</p>';
     $('idkBriefOut').innerHTML = html;
@@ -398,6 +402,7 @@
       '<p class="mini">Two entry points used by IFC business development in Italy: an Italian company expanding into an emerging market, or an Italian investor seeking emerging-market exposure alongside IFC. The screen proposes routes and precedents to discuss with IFC colleagues; it does not assess eligibility.</p>' +
       '<div class="input-grid"><div class="field"><label>Entry point</label><select id="coPath"><option value="corp">Italian corporate / sponsor expanding abroad</option><option value="inv">Italian investor seeking EM exposure</option></select></div>' +
       '<div class="field"><label>Client</label><select id="coClient"></select></div>' +
+      '<div class="field"><label>Target country</label><input id="coCountry" value="Brazil" placeholder="Country of investment"></div>' +
       '<div class="field"><label>Target region</label><select id="coRegion">' + REGIONS.map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label>Sector</label><select id="coSector">' + SECTORS.map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label>Main need</label><select id="coNeed"></select></div></div>' +
@@ -410,22 +415,22 @@
       $('coNeed').innerHTML = NEEDS.filter(function (n) { return needs.indexOf(n.id) > -1; }).map(function (n) { return '<option value="' + n.id + '">' + esc(n.en) + '</option>'; }).join('');
     }
     $('coPath').addEventListener('change', function () { fill(); run(); });
-    ['coClient', 'coRegion', 'coSector', 'coNeed'].forEach(function (id) { $(id).addEventListener('change', run); });
+    ['coClient', 'coCountry', 'coRegion', 'coSector', 'coNeed'].forEach(function (id) { $(id).addEventListener('change', run); });
     $('coRun').addEventListener('click', run);
     fill(); run();
     function run() {
-      var p = byId($('coClient').value), n = NEEDS.filter(function (x) { return x.id === $('coNeed').value; })[0], reg = $('coRegion').value, sec = $('coSector').value;
+      var p = byId($('coClient').value), n = NEEDS.filter(function (x) { return x.id === $('coNeed').value; })[0], country = $('coCountry').value.trim() || 'country to be specified', reg = $('coRegion').value, sec = $('coSector').value;
       var prec = PRECEDENTS.filter(function (x) { return x.region === reg || x.sector === sec; });
       var gaps = ['Named project or transaction, size and timeline', 'Sponsor financial statements and existing lenders', 'Country and sector eligibility check with the relevant IFC team'];
       if (p.status !== 'Verified') gaps.unshift('Verified institutional profile (mandate, investment rules, decision-makers)');
       if (n.id === 'risk') gaps.push('Host-country contracts and counterparties exposed to political risk');
       if (n.id === 'portfolio') gaps.push('Investment rules for emerging-market private credit and minimum rating requirements');
-      $('coOut').innerHTML = '<h3>' + esc(p.name) + ' · ' + esc(reg) + ' · ' + esc(sec) + '</h3>' +
-        '<p><b>Possible World Bank Group route:</b> ' + esc(n.prod) + '<br>' + src(n.src) + '</p>' +
+      $('coOut').innerHTML = '<h3>' + esc(p.name) + ' · ' + esc(country) + ' · ' + esc(reg) + ' · ' + esc(sec) + '</h3>' +
+        '<p><b>Client objective in ' + esc(country) + ':</b> ' + esc(n.en) + ' in ' + esc(sec) + '.</p>' + '<p><b>Possible World Bank Group route:</b> ' + esc(n.prod) + '<br>' + src(n.src) + '</p>' +
         '<p><b>Colleagues to involve:</b> ' + n.units.map(esc).join(' · ') + (p.ifc >= 2 ? ' · Relationship Manager (existing IFC counterpart)' : '') + '</p>' +
         '<p><b>Client evidence:</b> ' + statusTag(p.status) + ' ' + esc(p.ifcRecord) + '</p>' +
         '<h4>Italian precedents in the same region or sector</h4>' + (prec.length ? '<ul>' + prec.map(function (x) { return '<li><b>' + esc(x.sponsor) + '</b> — ' + esc(x.country) + ', ' + esc(x.sector) + ', ' + esc(x.year) + ': ' + esc(x.what) + ' ' + src(x.src) + '</li>'; }).join('') + '</ul>' : '<p class="mini">No Italian precedent in the sources reviewed for this region or sector.</p>') +
-        '<h4>Information gaps before engagement</h4><ul>' + gaps.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul>' +
+        '<h4>Country and transaction checks before engagement</h4><ul><li>Confirm IFC country eligibility, country strategy and relevant sector priorities for ' + esc(country) + '.</li><li>Assess political, regulatory, FX and transfer risks for the proposed transaction.</li>' + gaps.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul>' +
         '<p><button class="btn alt" id="coToDesk">Open the client profile →</button></p>' +
         '<p class="mini">Routes are hypotheses for internal discussion. IFC financing is subject to eligibility, appraisal and Board approval.</p>';
       $('coToDesk').addEventListener('click', function () { if (window.go) window.go('clients'); if (window.THEMIS_PG) window.THEMIS_PG('cl', 'clItaly'); renderProfile(p.id); showTab('idkProfile'); });
