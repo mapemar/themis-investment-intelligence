@@ -80,6 +80,9 @@ def test_overview_questions_route_to_workspaces(page):
     page.goto(BASE_URL)
     page.wait_for_timeout(500)
     assert page.locator(".qcard").count() == 7
+    assert page.locator(".qcard .qstatus").count() == 7
+    assert page.locator(".qcard .qstatus").filter(has_text="Working").count() == 0
+    assert "next development stage" in page.locator(".qcard").nth(4).inner_text().lower()
     page.locator(".qcard").nth(5).locator(".qstep").first.click()
     page.wait_for_timeout(200)
     assert visible_pages(page) == ["opportunities"]
@@ -109,6 +112,9 @@ def test_client_desk_brief_and_integrity(page):
     assert page.locator("#idkRows tr[data-pid]").count() == 2
     page.goto(f"{BASE_URL}#crm")
     page.wait_for_timeout(400)
+    # Events is intentionally the default Engagement tab; open the meeting brief before testing its language control.
+    assert page.locator("#enEvents").is_visible()
+    page.click("button[data-panel=enPrepare]")
     page.select_option("#idkLang", "it")
     assert "Nota per l'incontro" in page.inner_text("#idkBriefOut")
     page.click("button[data-panel=enIntegrity]")
@@ -164,6 +170,19 @@ def test_finance_base_case_is_coherent(page):
     page.wait_for_timeout(500)
     k = page.evaluate("[...document.querySelectorAll('#financeKpis .kpi strong')].map(e => parseFloat(e.innerText))")
     assert k[0] > 0 and k[1] > 0 and k[2] >= 1.3
+
+def test_finance_model_opens_first_and_recalculates_live(page):
+    page.goto(f"{BASE_URL}#finance")
+    page.wait_for_timeout(500)
+    assert page.locator("#fa3").is_visible()
+    assert page.locator("#cashflowChart svg").count() == 1
+    before = page.locator("#financeKpis .kpi strong").first.inner_text()
+    page.fill("#ftoll", "14")
+    page.wait_for_timeout(150)
+    after = page.locator("#financeKpis .kpi strong").first.inner_text()
+    assert before != after
+    assert after != "—"
+
 
 
 @pytest.mark.parametrize("pid", PAGES)
