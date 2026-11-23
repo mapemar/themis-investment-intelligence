@@ -143,8 +143,8 @@
 <h1>Project Assessment &amp; Finance</h1>
 <p class="intro">Screen an incoming proposal, then move from project evidence to an annual concession cash-flow model, financing structure and bankability scenarios. Reference asset for the model: toll-road concession.</p><p class="q-line"><b>Answers:</b> “A project proposal has landed on my desk: is it worth pursuing?”</p><div id="firstLook"></div><div class="section"><div><h2>Bankability test</h2><p>Assessment register, synthetic assumptions, annual cash flows and scenarios. All defaults are illustrative and editable.</p></div></div>
 <div class="agent-overview"><div class="eyebrow">Project assessment &amp; finance agent</div><h2 style="margin:6px 0">From project evidence to a financeable structure</h2><p>The AI layer is designed to extract and organise project evidence, flag missing inputs and explain results. All financial calculations below are deterministic and driven by the assumptions you control. This static prototype does not run a live AI model.</p><div class="agent-grid"><div class="agent-cell"><b>Assessment</b><span>Project readiness, demand, technical, regulatory, E&amp;S and commercial risks.</span></div><div class="agent-cell"><b>Financial engine</b><span>Annual CAPEX, toll revenues, operating costs, tax, debt schedules and returns.</span></div><div class="agent-cell"><b>Decision support</b><span>Scenario comparison, covenant headroom, financing gap and potential IFC role.</span></div></div></div>
-<div class="tabs" id="fatabs"><button class="tab active" data-tab="fa1">1 · Project assessment</button><button class="tab" data-tab="fa2">2 · Assumptions</button><button class="tab" data-tab="fa3">3 · Financial model</button><button class="tab" data-tab="fa4">4 · Bankability &amp; scenarios</button></div>
-<div class="panel active" id="fa1">
+<div class="tabs" id="fatabs"><button class="tab active" data-tab="fa3">1 · Financial model</button><button class="tab" data-tab="fa2">2 · Assumptions</button><button class="tab" data-tab="fa1">3 · Project assessment</button><button class="tab" data-tab="fa4">4 · Bankability &amp; scenarios</button></div>
+<div class="panel" id="fa1">
 <div class="grid two">
 <div class="card"><h3>Project profile</h3><div class="field"><label>Project / asset</label><input id="faProject" value="Illustrative Brazilian toll-road concession"/></div><div class="input-grid"><div class="field"><label>Country</label><input id="faCountry" value="Brazil"/></div><div class="field"><label>Asset type</label><select id="faAsset"><option>Toll-road concession</option><option>Port terminal</option><option>Rail concession</option><option>Renewable energy</option></select></div><div class="field"><label>Project stage</label><select id="faStage"><option>Pre-feasibility</option><option>Feasibility</option><option>Tender / procurement</option><option>Financial close</option><option>Operating / brownfield</option></select></div></div><div class="field"><label>Project description / analyst notes</label><textarea id="faDescription">Illustrative concession project. Validate concession agreement, traffic study, investment programme, tariff mechanism, environmental permits and sponsor information before relying on model outputs.</textarea></div><p class="mini">Profile fields are analyst inputs. No project-specific facts are preloaded.</p></div>
 <div class="card"><h3>Assessment dimensions</h3><p>Record the current status and the evidence still required. The status is qualitative and not an automated rating.</p><div class="pipeline-table"><table><thead><tr><th>Dimension</th><th>Assessment focus</th><th>Status</th></tr></thead><tbody>
@@ -190,9 +190,9 @@
 <button class="btn" onclick="runFinance()">Run / update financial model</button> <button class="btn alt" onclick="resetFinance()">Reset illustrative case</button>
 <p class="mini">Debt is drawn proportionally during construction and construction interest is capitalised (simplified IDC). Each facility is repaid using level annual payments after opening. No fees, grace-period structuring beyond construction, sculpted debt, DSRA or FX hedging in this draft.</p></div>
 </div>
-<div class="panel" id="fa3">
+<div class="panel active" id="fa3">
 <div class="card" style="margin-bottom:14px"><div class="section" style="margin:0 0 8px"><div><h3>Annual project cash flows</h3><p>Operating cash flow profile across the concession period. Values in USD millions; updated when assumptions or scenarios change.</p></div><span class="tag live">Dynamic model output</span></div><div aria-label="Annual project cash flow chart" id="cashflowChart" role="img"><p class="mini">Run the financial model to generate the cash-flow chart.</p></div><div class="mini">Revenue, CFADS, senior debt service and cash flow after debt service. Construction-period CAPEX and funding are shown separately below.</div></div>
-<div class="grid two"><div class="card"><h3>Construction sources &amp; uses</h3><p>Annual CAPEX and financing drawdowns, including capitalised construction interest.</p><div id="constructionChart"></div></div><div class="card"><h3>Operating cash flow</h3><p>Revenue, OPEX, major maintenance and CFADS by operating year.</p><div id="operatingChart"></div></div></div>
+<div class="mini" style="margin:10px 0 14px">Construction funding, debt drawdowns and operating cash-flow details are incorporated in the annual financing schedule below.</div>
 <div class="card" style="margin-top:14px"><h3>Annual project cash-flow &amp; debt schedule</h3><p>Operating cash flow, tax, debt service, coverage and closing balances. All amounts USD millions unless stated.</p><div id="financeOutput"><div class="result">Run the financial model to populate the annual schedule.</div></div></div>
 </div>
 <div class="panel" id="fa4">
@@ -457,8 +457,14 @@ document.getElementById('bankabilityOutput').innerHTML='<b>'+(npv>0&&minDSCR!==n
 function resetFinance(){var vals={fcost:500,fconstruction:3,ftenor:20,faadt:24000,ftoll:12,ftrafficgrowth:2.5,ftollgrowth:2,fopex:24,fopexgrowth:2.5,fmaint:30,fmaintcycle:5,ftax:25,fifcshare:30,fifcrate:7,fifctenor:15,fothershare:35,fotherrate:9,fothertenor:12,fwacc:9,fcovenant:1.3};Object.keys(vals).forEach(function(k){document.getElementById(k).value=vals[k]});runFinance()}
 var financeRoot=document.getElementById('finance');
 if(financeRoot){
- financeRoot.addEventListener('input',function(e){if(e.target&&e.target.matches('input'))runFinance()});
- financeRoot.addEventListener('change',function(e){if(e.target&&e.target.matches('input,select'))runFinance()});
+ // Recalculate from every editable assumption as the user types or changes a field.
+ var assumptionsPanel=document.getElementById('fa2');
+ if(assumptionsPanel){
+  assumptionsPanel.addEventListener('input',function(e){if(e.target&&e.target.matches('input,select'))runFinance()});
+  assumptionsPanel.addEventListener('change',function(e){if(e.target&&e.target.matches('input,select'))runFinance()});
+ }
+ var scenarioControl=document.getElementById('fscenario');
+ if(scenarioControl)scenarioControl.addEventListener('change',runFinance);
 }
 document.querySelectorAll('#fatabs .tab').forEach(function(btn){btn.addEventListener('click',function(){
  document.querySelectorAll('#fatabs .tab').forEach(function(x){x.classList.toggle('active',x===btn)});
