@@ -177,6 +177,7 @@ def test_finance_model_opens_first_and_recalculates_live(page):
     assert page.locator("#fa3").is_visible()
     assert page.locator("#cashflowChart svg").count() == 1
     before = page.locator("#financeKpis .kpi strong").first.inner_text()
+    page.click("button[data-tab=fa2]")
     page.fill("#ftoll", "14")
     page.wait_for_timeout(150)
     after = page.locator("#financeKpis .kpi strong").first.inner_text()
