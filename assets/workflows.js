@@ -43,12 +43,12 @@
 
   // ---------------------------------------------------------------- Overview: questions
   var QUESTIONS = [
-    { q: 'Who should I talk to in Italy, and why?', path: [['clients', 'cl', 'clItaly', 'Clients & Investors']], out: 'Prioritised prospects with sourced facts, IFC relationship and a transparent score.', 
-    { q: 'An Italian client wants to invest in country X: what can the World Bank Group offer?', path: [['opportunities', 'op', 'opClient', 'Opportunities'], ['country', null, null, 'Country Intelligence']], out: 'Country-specific WBG route, relevant instruments, Italian precedents and information gaps.', 
-    { q: 'A project proposal has landed on my desk: is it worth pursuing?', path: [['finance', null, null, 'First-look screen'], ['country', null, null, 'Country Intelligence'], ['finance', null, null, 'Bankability test']], out: 'Screening note (proceed, request information or refer) and a bankability test.', 
-    { q: 'How does country X look to an investor?', path: [['country', null, null, 'Country Intelligence']], out: 'Brazil: verified country note. Any other country: live World Bank indicators.', },
-    { q: 'Which projects could become IFC deals?', path: [['opportunities', 'op', 'opPipeline', 'Public pipeline'], ['opportunities', 'op', 'opDevelop', 'Develop a project']], out: 'Source-backed pipeline and the steps an immature project needs to become bankable.', status: 'Broader geographic coverage will be available in the next development stage.' },
-    { q: 'Which Italian investor could co-finance this project?', path: [['opportunities', 'op', 'opInvestors', 'From project to investors']], out: 'Shortlist with role, rationale, precedent, gaps and priority.', 
+    { q: 'Who should I talk to in Italy, and why?', path: [['clients', 'cl', 'clItaly', 'Clients & Investors']], out: 'Prioritised prospects with sourced facts, IFC relationship and a transparent score.' },
+    { q: 'An Italian client wants to invest in country X: what can the World Bank Group offer?', path: [['opportunities', 'op', 'opClient', 'Opportunities'], ['country', null, null, 'Country Intelligence']], out: 'Country-specific WBG route, relevant instruments, Italian precedents and information gaps.' },
+    { q: 'A project proposal has landed on my desk: is it worth pursuing?', path: [['finance', null, null, 'First-look screen'], ['country', null, null, 'Country Intelligence'], ['finance', null, null, 'Bankability test']], out: 'Screening note (proceed, request information or refer) and a bankability test.' },
+    { q: 'How does country X look to an investor?', path: [['country', null, null, 'Country Intelligence']], out: 'Brazil: verified country note. Any other country: live World Bank indicators.' },
+    { q: 'Which projects could become IFC deals?', path: [['opportunities', 'op', 'opPipeline', 'Public pipeline'], ['opportunities', 'op', 'opDevelop', 'Develop a project']], out: 'Source-backed pipeline and the steps an immature project needs to become bankable.', status: 'Additional country coverage will be available in the next development stage.' },
+    { q: 'Which Italian investor could co-finance this project?', path: [['opportunities', 'op', 'opInvestors', 'From project to investors']], out: 'Shortlist with role, rationale, precedent, gaps and priority.' },
     { q: 'I have a meeting or an event next week: what do I prepare?', path: [['crm', 'en', 'enPrepare', 'Meeting brief'], ['crm', 'en', 'enIntegrity', 'Integrity'], ['crm', 'en', 'enEvents', 'Events']], out: 'Brief in English or Italian, integrity pre-screen, event plan and follow-up.' }
   ];
   var MAP = [
@@ -66,7 +66,7 @@
       '<div class="qcards">' + QUESTIONS.map(function (x, i) {
         return '<div class="qcard"><div class="qnum">' + (i + 1) + '</div><h3>' + esc(x.q) + '</h3>' +
           '<p class="qpath">' + x.path.map(function (p, j) { return '<button class="qstep" data-q="' + i + '" data-s="' + j + '">' + esc(p[3]) + '</button>'; }).join('<span>→</span>') + '</p>' +
-          '<p><b>You get:</b> ' + esc(x.out) + '</p>' + (x.status ? '<span class="tag review">' + esc(x.status) + '</span>' : '') + '</div>';
+          '<p><b>You get:</b> ' + esc(x.out) + '</p><span class="tag review qstatus">' + (x.status ? esc(x.status) : '&nbsp;') + '</span></div>';
       }).join('') + '</div>';
     el.querySelectorAll('.qstep').forEach(function (b) {
       b.addEventListener('click', function () {
