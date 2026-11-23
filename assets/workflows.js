@@ -66,7 +66,7 @@
       '<div class="qcards">' + QUESTIONS.map(function (x, i) {
         return '<div class="qcard"><div class="qnum">' + (i + 1) + '</div><h3>' + esc(x.q) + '</h3>' +
           '<p class="qpath">' + x.path.map(function (p, j) { return '<button class="qstep" data-q="' + i + '" data-s="' + j + '">' + esc(p[3]) + '</button>'; }).join('<span>→</span>') + '</p>' +
-          '<p><b>You get:</b> ' + esc(x.out) + '</p><span class="tag review qstatus">' + (x.status ? esc(x.status) : '&nbsp;') + '</span></div>';
+          '<p><b>You get:</b> ' + esc(x.out) + '</p></div>';
       }).join('') + '</div>';
     el.querySelectorAll('.qstep').forEach(function (b) {
       b.addEventListener('click', function () {
