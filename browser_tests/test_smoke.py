@@ -80,9 +80,9 @@ def test_overview_questions_route_to_workspaces(page):
     page.goto(BASE_URL)
     page.wait_for_timeout(500)
     assert page.locator(".qcard").count() == 7
-    assert page.locator(".qcard .qstatus").count() == 7
-    assert page.locator(".qcard .qstatus").filter(has_text="Working").count() == 0
-    assert "next development stage" in page.locator(".qcard").nth(4).inner_text().lower()
+    assert page.locator(".qcard .qstatus").count() == 0
+    assert "You get:" in page.locator(".qcard").nth(0).inner_text()
+    assert "next development stage" not in page.locator(".qcard").nth(4).inner_text().lower()
     page.locator(".qcard").nth(5).locator(".qstep").first.click()
     page.wait_for_timeout(200)
     assert visible_pages(page) == ["opportunities"]
